@@ -1,35 +1,32 @@
-# Da Zero a Hero — edizione semplificata
+# LLM corso introduttivo
 
-**Reti neurali e LLM, da micrograd al Transformer**
 
-Revisione semplificata del corso in 10 lezioni ispirato alla serie *Neural Networks: Zero to Hero* di Andrej Karpathy, con aggiornamenti fino al 2026.
-
-> **Come leggere questa edizione.** Il contenuto tecnico è quello del corso originale, riorganizzato, accorciato e corretto. Le parti nuove, non presenti nel PDF, sono segnate con 🆕 (le appendici sono tutte nuove). L'elenco delle correzioni è nel file `report-revisione.md`.
+Il seguente documento, inspirato dalle lezioni di Andrej Karpathy "Neural Networks: Zero to Hero" descrive un percorso di apprendimento che descrive tutti i dettagli che permettono di generare una rete neurale.
 
 ---
 
 ## Indice
 
 - [Guida al corso](#guida-al-corso)
-- **Parte I — Le fondamenta**
-  - [Lezione 1 — micrograd: derivata e backpropagation](#lezione-1--micrograd-derivata-e-backpropagation)
-  - [Lezione 2 — Il modello bigramma](#lezione-2--il-modello-bigramma)
-  - [Lezione 3 — MLP ed embedding](#lezione-3--mlp-ed-embedding)
-- **Parte II — Far funzionare l'addestramento**
-  - [Lezione 4 — Attivazioni, gradienti, BatchNorm](#lezione-4--attivazioni-gradienti-batchnorm)
-  - [Lezione 5 — Backprop a mano, senza autograd](#lezione-5--backprop-a-mano-senza-autograd)
-  - [Lezione 6 — WaveNet e la gerarchia](#lezione-6--wavenet-e-la-gerarchia)
-- **Parte III — Il Transformer**
-  - [Lezione 7 — Costruiamo GPT da zero](#lezione-7--costruiamo-gpt-da-zero)
-  - [Lezione 8 — Il tokenizer: BPE da zero](#lezione-8--il-tokenizer-bpe-da-zero)
-- **Parte IV — Dalla teoria al modello reale**
-  - [Lezione 9 — Riprodurre GPT-2 (124M)](#lezione-9--riprodurre-gpt-2-124m)
-  - [Lezione 10 — Da modello base ad assistente](#lezione-10--da-modello-base-ad-assistente)
+- **Parte I --- Le fondamenta**
+  - [Lezione 1 --- micrograd: derivata e backpropagation](#lezione-1-micrograd-derivata-e-backpropagation)
+  - [Lezione 2 --- Il modello bigramma](#lezione-2-il-modello-bigramma)
+  - [Lezione 3 --- MLP ed embedding](#lezione-3-mlp-ed-embedding)
+- **Parte II --- Far funzionare l'addestramento**
+  - [Lezione 4 --- Attivazioni, gradienti, BatchNorm](#lezione-4-attivazioni-gradienti-batchnorm)
+  - [Lezione 5 --- Backprop a mano, senza autograd](#lezione-5-backprop-a-mano-senza-autograd)
+  - [Lezione 6 --- WaveNet e la gerarchia](#lezione-6-wavenet-e-la-gerarchia)
+- **Parte III --- Il Transformer**
+  - [Lezione 7 --- Costruiamo GPT da zero](#lezione-7-costruiamo-gpt-da-zero)
+  - [Lezione 8 --- Il tokenizer: BPE da zero](#lezione-8-il-tokenizer-bpe-da-zero)
+- **Parte IV --- Dalla teoria al modello reale**
+  - [Lezione 9 --- Riprodurre GPT-2 (124M)](#lezione-9-riprodurre-gpt-2-124m)
+  - [Lezione 10 --- Da modello base ad assistente](#lezione-10-da-modello-base-ad-assistente)
 - **Appendici**
-  - [A — Da nanoGPT a llama.cpp](#appendice-a--da-nanogpt-a-llamacpp)
-  - [B — Quantizzazione e GGUF](#appendice-b--quantizzazione-e-gguf)
-  - [C — Fine-tuning con LoRA e QLoRA](#appendice-c--fine-tuning-con-lora-e-qlora)
-  - [D — Cosa è cambiato dopo GPT-2 (2019–2026)](#appendice-d--cosa-è-cambiato-dopo-gpt-2-20192026)
+  - [A --- Da nanoGPT a llama.cpp](#appendice-a-da-nanogpt-a-llama.cpp)
+  - [B --- Quantizzazione e GGUF](#appendice-b-quantizzazione-e-gguf)
+  - [C --- Fine-tuning con LoRA e QLoRA](#appendice-c-fine-tuning-con-lora-e-qlora)
+  - [D --- Cosa è cambiato dopo GPT-2 (2019--2026)](#appendice-d-cosa-è-cambiato-dopo-gpt-2-20192026)
   - [Glossario minimo](#glossario-minimo)
 
 ---
@@ -38,16 +35,19 @@ Revisione semplificata del corso in 10 lezioni ispirato alla serie *Neural Netwo
 
 ### L'obiettivo
 
-Capire davvero come funziona un LLM **costruendolo pezzo per pezzo**. Niente scatole nere: ogni componente viene scritto a mano in Python, poi ritrovato dentro PyTorch, poi usato per costruire il pezzo successivo.
+Capire davvero come funziona un LLM costruendone uno (estremamente semplice) da zero.
 
-La catena logica è questa, e nessun anello si può saltare:
+Al termine di questo percorso otterremo un Large Language Model semplice ma nella sua architettura simile ad un moderno modello AI. Stile GPT.
+Faremo questo partendo da semplici classi scritte in Python e poi evolvere quanto fatto, comprendere come queste primitive siano già parte di librerie specializzate. Adotteremo, quindi  PyTorch per completare  problemi più complessi fino ad arrivare al prodotto completo.
+
+Il percorso formativo segue i seguenti, fondamentali passaggi tutti equamente importanti.
 
 ```
-derivata → backprop → neurone → MLP → embedding → attenzione
-        → Transformer → tokenizer → scala → post-training
+derivata -> backprop -> neurone -> MLP -> embedding -> attenzione
+        -> Transformer -> tokenizer -> scala -> post-training
 ```
 
-### Come sono fatte le lezioni
+### Come le lezioni sono strutturate
 
 Ogni lezione segue, a grandi linee, lo stesso percorso:
 
@@ -63,26 +63,26 @@ Nelle lezioni più sperimentali (4, 6, 9 e 10) la parte centrale è divisa per a
 
 Tre segni ricorrono nel testo:
 
-- ⚠️ un bug tipico, che spesso non dà alcun errore;
-- 🔍 un controllo da fare sempre;
-- 🆕 una parte aggiunta in questa revisione (aggiornamenti e integrazioni).
+- **[Attenzione]** un bug tipico, che spesso non dà alcun errore;
+- **[Verifica]** un controllo da fare sempre;
+- **[Nuovo]** una parte aggiunta in questa revisione (aggiornamenti e integrazioni).
 
 Le durate indicate all'inizio di ogni lezione sono **tempi di lettura**. Scrivere il codice e fare gli esercizi richiede da due a quattro volte tanto.
 
-### Il programma in una tabella
+### Il programma
 
-| # | Lezione | Concetto chiave |
-|---|---|---|
-| 1 | micrograd | Il gradiente dice di quanto cambia la loss se muovi di poco un parametro. |
-| 2 | Bigramma | Un modello di linguaggio stima $P(x_t \mid x_{<t})$. |
-| 3 | MLP ed embedding | Gli embedding sono lo spazio in cui il modello rappresenta i simboli. |
-| 4 | Attivazioni e BatchNorm | Addestrare significa tenere sane le statistiche dei segnali, strato per strato. |
-| 5 | Backprop a mano | Chi sa scrivere il backward sa trovare i bug di un training che non converge. |
-| 6 | WaveNet | L'architettura decide come l'informazione del contesto viene fusa. |
-| 7 | GPT da zero | L'attenzione è una comunicazione fra token con pesi appresi. |
-| 8 | Tokenizer BPE | Molti "difetti" degli LLM sono in realtà difetti del tokenizer. |
-| 9 | GPT-2 (124M) | Fra un modello didattico e uno vero la differenza è quasi tutta ingegneria. |
-| 10 | SFT, RLHF, DPO | Un assistente è un modello base con un secondo addestramento, su dati e obiettivi diversi. |
+| #   | Lezione                 | Concetto chiave                                                                            |
+| --- | ----------------------- | ------------------------------------------------------------------------------------------ |
+| 1   | micrograd               | Il gradiente dice di quanto cambia la loss se muovi di poco un parametro.                  |
+| 2   | Bigramma                | Un modello di linguaggio stima $P(x_t \mid x_{<t})$.                                       |
+| 3   | MLP ed embedding i      | Gli embedding sono lo spazio in cui il modello rappresenta i simboli.                      |
+| 4   | Attivazioni e BatchNorm | Addestrare significa tenere sane le statistiche dei segnali, strato per strato.            |
+| 5   | Backprop a mano         | Chi sa scrivere il backward sa trovare i bug di un training che non converge.              |
+| 6   | WaveNet                 | L'architettura decide come l'informazione del contesto viene fusa.                         |
+| 7   | GPT da zero             | L'attenzione è una comunicazione fra token con pesi appresi.                               |
+| 8   | Tokenizer BPE           | Molti "difetti" degli LLM sono in realtà difetti del tokenizer.                            |
+| 9   | GPT-2 (124M)            | Fra un modello didattico e uno vero la differenza è quasi tutta ingegneria.                |
+| 10  | SFT, RLHF, DPO          | Un assistente è un modello base con un secondo addestramento, su dati e obiettivi diversi. |
 
 ### Prerequisiti
 
@@ -94,18 +94,20 @@ PyTorch **non** è un prerequisito: costruiamo noi le sue parti essenziali e poi
 
 ### Come usarlo
 
-Il corso va fatto **scrivendo il codice**, non solo leggendolo. Regola pratica: se non riesci a ridisegnare a memoria il grafo della lezione precedente, non passare alla successiva.
+Il corso va fatto **scrivendo il codice**, non solo leggendolo. 
+E' una buona pratica cercare di ripercorrere almeno mentalmente il capitolo che si è terminato prima di passare al successivo.
 
 **Nota sui numeri.** Molti risultati (loss, percentuali) dipendono dal seme casuale e dalla versione delle librerie. Se ottieni valori un po' diversi, controlla l'ordine di grandezza e la tendenza, non la terza cifra decimale.
 
 **Software.** La Lezione 1 usa solo Python. Dalla Lezione 2 serve PyTorch (`pip install torch`); per i grafici degli esercizi, `matplotlib`. La Lezione 9 richiede una GPU per essere eseguita davvero.
 
-**Dati.** Le Lezioni 2–6 usano un file `nomi.txt` con 399 nomi propri italiani (uno per riga). Le Lezioni 7, 8 e 10 usano un racconto, `racconto.txt` (circa 22 500 caratteri). Se non li hai, va bene qualunque lista di nomi e qualunque testo in prosa di dimensione simile: i numeri cambieranno, i fenomeni no.
+**Dati.** Le Lezioni 2--6 usano un file `nomi.txt` con 399 nomi propri italiani (uno per riga). Le Lezioni 7, 8 e 10 usano un racconto, `racconto.txt` (circa 22 500 caratteri). Se non li hai, va bene qualunque lista di nomi e qualunque testo in prosa di dimensione simile: i numeri cambieranno, i fenomeni no.
 
 ---
-# PARTE I — LE FONDAMENTA
 
-## Lezione 1 — micrograd: derivata e backpropagation
+# PARTE I --- LE FONDAMENTA
+
+## Lezione 1 --- micrograd: derivata e backpropagation
 
 *Lettura: circa 45 minuti.* Alla fine avrai scritto da zero un motore di differenziazione automatica (circa 100 righe) e ci avrai addestrato sopra una piccola rete neurale. Senza PyTorch.
 
@@ -162,19 +164,19 @@ Ogni espressione è un grafo. Prendiamo $L = (a\cdot b + c)\cdot f$ con $a=2$, $
 
 Indichiamo con $\bar x$ il gradiente $\partial L/\partial x$ accumulato sul nodo $x$ (nel codice sarà `x.grad`). Per un nodo $z$ calcolato da $x$ e $y$ bastano tre regole locali:
 
-| Operazione | Regola nel backward | In parole |
-|---|---|---|
-| $z = x + y$ | $\bar x \mathrel{+}= \bar z$, $\quad \bar y \mathrel{+}= \bar z$ | il **+ distribuisce** |
-| $z = x \cdot y$ | $\bar x \mathrel{+}= y\,\bar z$, $\quad \bar y \mathrel{+}= x\,\bar z$ | il **× scambia** |
-| $z = \tanh(x)$ | $\bar x \mathrel{+}= (1 - z^2)\,\bar z$ | la **tanh scala** |
+| Operazione      | Regola nel backward                                                    | In parole                            |
+| --------------- | ---------------------------------------------------------------------- | ------------------------------------ |
+| $z = x + y$     | $\bar x \mathrel{+}= \bar z$, $\quad \bar y \mathrel{+}= \bar z$       | il **+ distribuisce**                |
+| $z = x \cdot y$ | $\bar x \mathrel{+}= y\,\bar z$, $\quad \bar y \mathrel{+}= x\,\bar z$ | il **$\boldsymbol{\times}$ scambia** |
+| $z = \tanh(x)$  | $\bar x \mathrel{+}= (1 - z^2)\,\bar z$                                | la **tanh scala**                    |
 
 Applicandole al nostro esempio, partendo da $\bar L = 1$:
 
-| Nodo | Regola | Risultato |
-|---|---|---|
-| $L = d\cdot f$ | × scambia | $\bar d = f = -2$, $\bar f = d = 4$ |
-| $d = e + c$ | + distribuisce | $\bar e = -2$, $\bar c = -2$ |
-| $e = a\cdot b$ | × scambia | $\bar a = \bar e\cdot b = 6$, $\bar b = \bar e\cdot a = -4$ |
+| Nodo           | Regola           | Risultato                                                   |
+| -------------- | ---------------- | ----------------------------------------------------------- |
+| $L = d\cdot f$ | $\times$ scambia | $\bar d = f = -2$, $\bar f = d = 4$                         |
+| $d = e + c$    | + distribuisce   | $\bar e = -2$, $\bar c = -2$                                |
+| $e = a\cdot b$ | $\times$ scambia | $\bar a = \bar e\cdot b = 6$, $\bar b = \bar e\cdot a = -4$ |
 
 Quindi $\nabla L = (6, -4, -2, 4)$ rispetto a $(a, b, c, f)$.
 
@@ -184,7 +186,7 @@ Come si leggono questi numeri:
 - **Il modulo dà l'importanza.** $|\bar b| = 4$ contro $|\bar c| = 2$: muovere $b$ conta il doppio.
 - **Conta il grafo intero.** $c$ entra con coefficiente 1, eppure il suo gradiente è $-2$: dipende da cosa succede dopo (viene moltiplicato per $f$).
 
-**Un passo di discesa.** Spostiamo ogni variabile di $-\eta$ volte il suo gradiente, con $\eta = 0{,}01$: $a \to 1{,}94$, $b \to -2{,}96$, $c \to 10{,}02$, $f \to -2{,}04$. La loss passa da $-8$ a circa $-8{,}73$. Al primo ordine la teoria prevede una variazione di $-\eta\,\lVert\nabla L\rVert^2 = -0{,}01 \cdot (36 + 16 + 4 + 16) = -0{,}72$; la piccola differenza (−0,73 contro −0,72) è dovuta alla curvatura. Questo è, letteralmente, ciò che succede a ogni passo dell'addestramento di un LLM, con $10^8$ o più numeri invece di quattro.
+**Un passo di discesa.** Spostiamo ogni variabile di $-\eta$ volte il suo gradiente, con $\eta = 0{,}01$: $a \to 1{,}94$, $b \to -2{,}96$, $c \to 10{,}02$, $f \to -2{,}04$. La loss passa da $-8$ a circa $-8{,}73$. Al primo ordine la teoria prevede una variazione di $-\eta\,\lVert\nabla L\rVert^2 = -0{,}01 \cdot (36 + 16 + 4 + 16) = -0{,}72$; la piccola differenza ($-0{,}73$ contro $-0{,}72$) è dovuta alla curvatura. Questo è, letteralmente, ciò che succede a ogni passo dell'addestramento di un LLM, con $10^8$ o più numeri invece di quattro.
 
 #### 2.4 Perché all'indietro?
 
@@ -201,65 +203,94 @@ Il deep learning ha milioni di input (i parametri) e un solo output (la loss): �
 2. **Accumula, non assegna.** Se un valore viene usato più volte, i contributi si sommano (`+=`).
 3. **Ricorda il forward.** Per derivare deve conservare dei valori del forward (per esempio, nel prodotto $a \cdot b$, il valore di $b$ per derivare rispetto ad $a$). Per questo l'addestramento consuma molta più memoria dell'inferenza: le attivazioni intermedie vanno tenute fino al backward.
 
-> **Terminologia.** In PyTorch la funzione di backward di un nodo è `grad_fn` (`AddBackward0`, `MulBackward0`, …). Il nome formale dell'operazione è *vector–Jacobian product* (VJP). Attenzione al falso amico: *gradient accumulation* nel gergo pratico indica un'altra cosa, cioè sommare i gradienti di più micro-batch prima di aggiornare i pesi (Lezione 9).
+> **Terminologia.** In PyTorch la funzione di backward di un nodo è `grad_fn` (`AddBackward0`, `MulBackward0`, ...): è il corrispettivo del nostro `Value.op`. Il nome formale dell'operazione è *vector--Jacobian product* (VJP). Attenzione al falso amico: *gradient accumulation* nel gergo pratico indica un'altra cosa, cioè sommare i gradienti di più micro-batch prima di aggiornare i pesi (Lezione 9).
 
-### 3. Il codice: la classe `Value`
+### 3. Il codice: le classi `Value` e `Op`
 
-Un oggetto che contiene un numero **e si ricorda da dove viene**.
+Due concetti, due classi. Un `Value` è un numero **che si ricorda da dove viene**: contiene il risultato, il suo gradiente e, se non è una foglia, l'operazione che l'ha prodotto. Un `Op` è quell'operazione: calcola il forward e sa come distribuire il gradiente ai suoi input.
 
 ```python
 import math
 
+class Op:
+    """Un nodo-operazione. Ogni sottoclasse, nel suo __init__, calcola il
+    forward (una volta sola) e imposta due attributi:
+      self.inputs: tupla di Value, gli input (servono al backward);
+      self.out:    il Value risultato, creato con op=self."""
+
+    def _to_value(self, x):
+        """Se x è un numero lo avvolge in un Value, altrimenti lo lascia."""
+        return x if isinstance(x, Value) else Value(x)
+
+    def backward(self, g):
+        """Distribuisce il gradiente dell'output ai gradienti degli input
+        (regola della catena).
+        Input:  g, un float: dL/d(out), il gradiente che arriva dal nodo
+                a valle.
+        Output: una tupla di float, uno per ogni input e nello stesso
+                ordine di self.inputs: dL/d(input_i) = derivata locale * g.
+                Non modifica nessun grad: li accumula Value.backward.
+        Da implementare nelle sottoclassi."""
+        raise NotImplementedError
+
+class Add(Op):
+    def __init__(self, x, y):
+        x, y = self._to_value(x), self._to_value(y)
+        self.inputs = (x, y)
+        self.out = Value(x.data + y.data, op=self)
+    def backward(self, g):
+        return g, g                                 # il + distribuisce
+
+class Mul(Op):
+    def __init__(self, x, y):
+        x, y = self._to_value(x), self._to_value(y)
+        self.inputs = (x, y)
+        self.out = Value(x.data * y.data, op=self)
+    def backward(self, g):
+        x, y = self.inputs
+        return y.data * g, x.data * g               # il * scambia
+
+class Pow(Op):
+    def __init__(self, x, k):
+        x = self._to_value(x)
+        self.k = k                    # k è un numero, non un input
+        self.inputs = (x,)
+        self.out = Value(x.data ** k, op=self)
+    def backward(self, g):
+        (x,) = self.inputs
+        return (self.k * x.data ** (self.k - 1) * g,)
+
+class Tanh(Op):
+    def __init__(self, x):
+        x = self._to_value(x)
+        self.inputs = (x,)
+        self.out = Value(math.tanh(x.data), op=self)
+    def backward(self, g):
+        return ((1 - self.out.data**2) * g,)        # la tanh scala
+
+class Exp(Op):
+    def __init__(self, x):
+        x = self._to_value(x)
+        self.inputs = (x,)
+        self.out = Value(math.exp(x.data), op=self)
+    def backward(self, g):
+        return (self.out.data * g,)                 # d/dx e^x = e^x
+
 class Value:
-    def __init__(self, data, _children=(), _op=''):
+    """Un numero, il suo gradiente, e (se non è una foglia) l'Op che l'ha prodotto."""
+    def __init__(self, data, op=None):
         self.data = data
         self.grad = 0.0                 # dL/dself, all'inizio zero
-        self._backward = lambda: None   # come propagare il gradiente ai figli
-        self._prev = set(_children)     # da quali nodi sono nato
-        self._op = _op                  # quale operazione mi ha creato
+        self.op = op                    # None per input e parametri
 
     def __repr__(self):
         return f"Value(data={self.data:.4f}, grad={self.grad:.4f})"
 
-    def __add__(self, other):
-        other = other if isinstance(other, Value) else Value(other)
-        out = Value(self.data + other.data, (self, other), '+')
-        def _backward():
-            self.grad  += out.grad      # il + distribuisce
-            other.grad += out.grad
-        out._backward = _backward
-        return out
-
-    def __mul__(self, other):
-        other = other if isinstance(other, Value) else Value(other)
-        out = Value(self.data * other.data, (self, other), '*')
-        def _backward():
-            self.grad  += other.data * out.grad   # il × scambia
-            other.grad += self.data * out.grad
-        out._backward = _backward
-        return out
-
-    def __pow__(self, k):               # k è un numero, non un Value
-        out = Value(self.data ** k, (self,), f'**{k}')
-        def _backward():
-            self.grad += k * self.data ** (k - 1) * out.grad
-        out._backward = _backward
-        return out
-
-    def tanh(self):
-        t = math.tanh(self.data)
-        out = Value(t, (self,), 'tanh')
-        def _backward():
-            self.grad += (1 - t**2) * out.grad
-        out._backward = _backward
-        return out
-
-    def exp(self):
-        out = Value(math.exp(self.data), (self,), 'exp')
-        def _backward():
-            self.grad += out.data * out.grad      # d/dx e^x = e^x
-        out._backward = _backward
-        return out
+    def __add__(self, other): return Add(self, other).out
+    def __mul__(self, other): return Mul(self, other).out
+    def __pow__(self, k):     return Pow(self, k).out
+    def tanh(self):           return Tanh(self).out
+    def exp(self):            return Exp(self).out
 
     # Operazioni derivate: composizioni di quelle sopra, il backward è gratis
     def __neg__(self):            return self * -1
@@ -270,24 +301,49 @@ class Value:
     def __truediv__(self, other): return self * other**-1
 
     def backward(self):
-        # ordine topologico: ogni nodo dopo tutti i nodi da cui dipende
-        topo, visited = [], set()
-        def build(v):
-            if v not in visited:
-                visited.add(v)
-                for child in v._prev:
-                    build(child)
-                topo.append(v)
-        build(self)
         self.grad = 1.0                 # dL/dL = 1, il seme
-        for node in reversed(topo):
-            node._backward()
+        for node in reversed(_topo_order(self, set(), [])):
+            if node.op:                 # le foglie non hanno nulla da propagare
+                grads = node.op.backward(node.grad)
+                for inp, g in zip(node.op.inputs, grads):
+                    inp.grad += g       # accumula: l'unico += di tutto il codice
+
+def _topo_order(v, visited, topo):
+    """Ordine topologico: ogni nodo dopo tutti i nodi da cui dipende."""
+    if v not in visited:
+        visited.add(v) # Perché e' un grafo aciclico non un albero.
+                       # posso raggiungere lo stesso nodo  usando tante strade
+        if v.op:
+            for inp in v.op.inputs:
+                _topo_order(inp, visited, topo) # parto dalla fine!
+        topo.append(v)
+    return topo
 ```
 
-Tre punti da capire bene:
+> **Gli operatori sono metodi.** I metodi come `__add__` e `__radd__` sono associati direttamente all'operazione che descrivono: quando Python incontra un operatore, chiama il metodo corrispondente. Se scriviamo `Value(3) + Value(5)`, Python lo esegue come `Value(3).__add__(Value(5))`. Il nostro `__add__` non restituisce un numero: costruisce un nodo `Add` e ne restituisce l'`.out`. Così basta scrivere la formula perché il grafo si costruisca da solo.
+>
+> | Scriviamo             | Python esegue                     |
+> |-----------------------|-----------------------------------|
+> | `Value(3) + Value(5)` | `Value(3).__add__(Value(5))`      |
+> | `Value(3) * Value(5)` | `Value(3).__mul__(Value(5))`      |
+> | `Value(3) ** 2`       | `Value(3).__pow__(2)`             |
+> | `-Value(3)`           | `Value(3).__neg__()`              |
+> | `Value(3) - Value(5)` | `Value(3).__sub__(Value(5))`      |
+> | `Value(3) / Value(5)` | `Value(3).__truediv__(Value(5))`  |
+> | `2 + Value(5)`        | `Value(5).__radd__(2)`            |
+> | `2 * Value(5)`        | `Value(5).__rmul__(2)`            |
+> | `2 - Value(5)`        | `Value(5).__rsub__(2)`            |
+>
+> I metodi con la `r` (*reflected*, riflessi) servono quando il `Value` sta a **destra** dell'operatore. In `2 + Value(5)` Python prova prima `(2).__add__(Value(5))`, ma un `int` non sa sommare un `Value` e rinuncia. Allora prova il metodo riflesso del secondo operando, `Value(5).__radd__(2)`. Senza `__radd__` e `__rmul__`, espressioni come `2 * x` darebbero `TypeError`.
+>
+> I metodi con il doppio trattino basso (*dunder*) sono **metodi speciali** con nomi riservati dal linguaggio; ridefinirli si chiama **overloading degli operatori**. `tanh` ed `exp` non hanno un operatore: si chiamano esplicitamente, `x.tanh()`.
 
-- **`+=` e non `=`.** Con `b = a + a`, `a` riceve gradiente da due strade. Con `=` la seconda cancellerebbe la prima: nessun errore, solo un training che non converge.
-- **`reversed(topo)`** garantisce che quando chiamiamo `node._backward()` il gradiente di quel nodo sia già completo.
+Cinque punti da capire bene:
+
+- **Il forward si calcola una volta sola**, nell'`__init__` di ogni operazione, quando viene creata. L'`Op` non lo rifà mai: conserva gli input (e, se serve, l'output) solo per poter derivare nel backward (la proprietà 3 del §2.5).
+- **Il `backward` di ogni `Op` è locale e puro**: riceve $\bar z$ e restituisce i gradienti dei suoi input, senza toccare nient'altro. È la tabella del §2.3 scritta in Python.
+- **`+=` e non `=`.** L'accumulo sta in un solo punto, in `Value.backward`. Con `b = a + a`, `a` riceve gradiente da due strade. Con `=` la seconda cancellerebbe la prima: nessun errore, solo un training che non converge.
+- **`reversed(...)` dell'ordine topologico** garantisce che quando chiamiamo `node.op.backward(node.grad)` il gradiente di quel nodo sia già completo.
 - **La tanh è un nodo unico** solo perché conosciamo la sua derivata in forma chiusa. Potremmo spezzarla in operazioni elementari e funzionerebbe lo stesso. Quanto "grandi" fare i nodi è una scelta di ingegneria (è l'idea dei *kernel fusi*), non di matematica.
 
 ### 4. La verifica: un neurone, contro PyTorch
@@ -297,11 +353,11 @@ Un neurone calcola $o = \tanh\big(\sum_i w_i x_i + b\big)$.
 ```python
 x1, x2 = Value(2.0), Value(0.0)
 w1, w2 = Value(-3.0), Value(1.0)
-b = Value(6.8813735870195432)
+b = Value(7.0)
 o = (x1*w1 + x2*w2 + b).tanh()
 o.backward()
-print(x1.grad, w1.grad)   # circa -1.5 e 1.0 (a meno di arrotondamenti)
-print(x2.grad, w2.grad)   # circa  0.5 e 0.0
+print(x1.grad, w1.grad)   # circa -1.2599 e 0.8399
+print(x2.grad, w2.grad)   # circa  0.4200 e 0.0
 ```
 
 Lo stesso calcolo in PyTorch:
@@ -312,11 +368,11 @@ x1 = torch.tensor([2.0], dtype=torch.double, requires_grad=True)
 x2 = torch.tensor([0.0], dtype=torch.double, requires_grad=True)
 w1 = torch.tensor([-3.0], dtype=torch.double, requires_grad=True)
 w2 = torch.tensor([1.0], dtype=torch.double, requires_grad=True)
-b  = torch.tensor([6.8813735870195432], dtype=torch.double, requires_grad=True)
+b  = torch.tensor([7.0], dtype=torch.double, requires_grad=True)
 o = torch.tanh(x1*w1 + x2*w2 + b)
 o.backward()
-print(x1.grad.item(), w1.grad.item())   # circa -1.5 e 1.0
-print(x2.grad.item(), w2.grad.item())   # circa  0.5 e 0.0
+print(x1.grad.item(), w1.grad.item())   # circa -1.2599 e 0.8399
+print(x2.grad.item(), w2.grad.item())   # circa  0.4200 e 0.0
 ```
 
 Gli stessi numeri. Nota: $\partial o/\partial w_2 = 0$ perché $x_2 = 0$. **Un input nullo rende invisibile il suo peso**, che quindi non verrà aggiornato: è uno dei motivi per cui i dati si normalizzano.
@@ -339,7 +395,7 @@ class Neuron(Module):
     def __init__(self, nin):
         self.w = [Value(random.uniform(-1, 1)) for _ in range(nin)]
         self.b = Value(0.0)
-    def __call__(self, x):
+    def forward(self, x):
         act = sum((wi*xi for wi, xi in zip(self.w, x)), self.b)
         return act.tanh()
     def parameters(self):
@@ -348,8 +404,8 @@ class Neuron(Module):
 class Layer(Module):
     def __init__(self, nin, nout):
         self.neurons = [Neuron(nin) for _ in range(nout)]
-    def __call__(self, x):
-        outs = [n(x) for n in self.neurons]
+    def forward(self, x):
+        outs = [n.forward(x) for n in self.neurons]
         return outs[0] if len(outs) == 1 else outs
     def parameters(self):
         return [p for n in self.neurons for p in n.parameters()]
@@ -358,15 +414,15 @@ class MLP(Module):
     def __init__(self, nin, nouts):
         sz = [nin] + nouts
         self.layers = [Layer(sz[i], sz[i+1]) for i in range(len(nouts))]
-    def __call__(self, x):
+    def forward(self, x):
         for layer in self.layers:
-            x = layer(x)
+            x = layer.forward(x)
         return x
     def parameters(self):
         return [p for layer in self.layers for p in layer.parameters()]
 ```
 
-Il cuore è `Neuron.__call__`: prodotto scalare, bias, non-linearità. Il resto è organizzazione.
+Il cuore è `Neuron.forward`: prodotto scalare, bias, non-linearità. Il resto è organizzazione.
 
 #### 5.1 La loss: la bussola
 
@@ -376,7 +432,7 @@ La loss comprime in **un solo numero** la distanza fra predizioni e valori desid
 2. **Essere derivabile.** "Quante risposte sono giuste" è una funzione a gradini: derivata zero quasi ovunque, nessun segnale. Per questo si ottimizza sempre una versione morbida dell'obiettivo.
 3. **Avere il minimo nel posto giusto**, cioè quando le predizioni coincidono con i target.
 
-Per una rete che produce numeri, la scelta classica è l'**errore quadratico**: $L = \sum_i (\hat y_i - y_i)^2$. Il quadrato rende ogni termine positivo, è simmetrico, e punisce di più gli errori grandi. La sua derivata, $2(\hat y_i - y_i)$, è **l'errore stesso** (raddoppiato): predizione troppo alta → gradiente positivo → la discesa la abbassa.
+Per una rete che produce numeri, la scelta classica è l'**errore quadratico**: $L = \sum_i (\hat y_i - y_i)^2$. Il quadrato rende ogni termine positivo, è simmetrico, e punisce di più gli errori grandi. La sua derivata, $2(\hat y_i - y_i)$, è **l'errore stesso** (raddoppiato): predizione troppo alta $\to$ gradiente positivo $\to$ la discesa la abbassa.
 
 > La rete diventa brava esattamente in ciò che la loss misura, non in ciò che avevi in mente tu.
 
@@ -390,7 +446,7 @@ ys = [1.0, -1.0, -1.0, 1.0]     # target desiderati
 
 for k in range(100):
     # forward
-    ypred = [n(x) for x in xs]
+    ypred = [n.forward(x) for x in xs]
     loss = sum((yout - ygt)**2 for ygt, yout in zip(ys, ypred))
     # backward
     n.zero_grad()               # MAI dimenticarlo
@@ -402,7 +458,7 @@ for k in range(100):
 
 La loss scende da circa 5,3 al primo passo a circa 0,01 dopo 100 passi; le predizioni passano da valori quasi uguali (la rete dice "sì" a tutto) a circa $(0{,}97, -0{,}94, -0{,}96, 0{,}94)$ contro i target $(1, -1, -1, 1)$.
 
-Le tre fasi **forward → backward → update** sono le stesse dell'addestramento di GPT-4. Cambia solo la scala.
+Le tre fasi **forward $\boldsymbol{\to}$ backward $\boldsymbol{\to}$ update** sono le stesse dell'addestramento di GPT-4. Cambia solo la scala.
 
 Tre dettagli che valgono la lezione:
 
@@ -412,16 +468,16 @@ Tre dettagli che valgono la lezione:
 
 ### 6. Esercizi
 
-1. **Aggiungi la ReLU.** Implementa `relu()` con derivata 1 per $x>0$ e 0 altrimenti. Sostituiscila alla tanh e confronta la convergenza. Cosa succede a un neurone che riceve sempre input negativi? (cerca *dying ReLU*)
-2. **Il bug del riuso.** Calcola il gradiente di `b = a + a` con `a = Value(3.0)`: deve venire 2. Ora sostituisci `+=` con `=` in `__add__` e rifai. Cosa ottieni e perché?
+1. **Aggiungi la ReLU.** Implementa una `class ReLU(Op)` e il metodo `Value.relu()`, con derivata 1 per $x>0$ e 0 altrimenti. Sostituiscila alla tanh e confronta la convergenza. Cosa succede a un neurone che riceve sempre input negativi? (cerca *dying ReLU*)
+2. **Il bug del riuso.** Calcola il gradiente di `b = a + a` con `a = Value(3.0)`: deve venire 2. Ora sostituisci `inp.grad += g` con `inp.grad = g` in `Value.backward` e rifai. Cosa ottieni e perché?
 3. **Verifica numerica (gradient checking).** Scrivi una funzione che confronti `.grad` con la stima a differenze centrali $\frac{L(x+h) - L(x-h)}{2h}$. È lo strumento con cui si controllano davvero le implementazioni del backward.
-4. *(Ponte verso la Lezione 2)* **Softmax e cross-entropy.** Implementa $p_i = e^{z_i}/\sum_j e^{z_j}$ su una lista di `Value` e la loss $L = -\log p_y$. Verifica contro PyTorch il risultato notevole $\partial L/\partial z_i = p_i - \mathbb{1}[i=y]$.
+4. *(Ponte verso la Lezione 2)* **Softmax e cross-entropy.** Implementa $p_i = e^{z_i}/\sum_j e^{z_j}$ su una lista di `Value` e la loss $L = -\log p_y$. Verifica contro PyTorch il risultato notevole $\partial L/\partial z_i = p_i - \mathbf{1}[i=y]$.
 
 ### 7. Verso gli LLM
 
 Un LLM è, letteralmente, un grafo computazionale come quello di micrograd: miliardi di volte più grande, con le stesse operazioni e un `backward()` che parte da $\partial L/\partial L = 1$.
 
-- **Già definitivo:** il meccanismo di apprendimento, il ciclo forward → backward → update, l'accumulo dei gradienti.
+- **Già definitivo:** il meccanismo di apprendimento, il ciclo forward $\to$ backward $\to$ update, l'accumulo dei gradienti.
 - **Manca ancora:** l'efficienza (i tensori, dalla Lezione 2; le GPU, nella Lezione 9), la rappresentazione del testo (Lezioni 2 e 8), l'architettura (l'attenzione, Lezione 7), la scala (Lezione 9).
 
 ### Riepilogo
@@ -429,12 +485,13 @@ Un LLM è, letteralmente, un grafo computazionale come quello di micrograd: mili
 1. La derivata è una sensibilità: di quanto cambia l'output se muovo questo numero.
 2. La regola della catena moltiplica le sensibilità lungo il grafo e le somma quando le strade sono più di una.
 3. Il backward parte da 1 e percorre il grafo in ordine topologico inverso: una passata dà tutti i gradienti.
-4. Il + distribuisce, il × scambia, la tanh scala per $1 - t^2$.
+4. Il + distribuisce, il $\times$ scambia, la tanh scala per $1 - t^2$.
 5. I gradienti si accumulano: azzerali a ogni passo.
 6. La loss è un unico scalare derivabile; per l'errore quadratico il gradiente in ingresso è l'errore stesso.
 
 ---
-## Lezione 2 — Il modello bigramma
+
+## Lezione 2 --- Il modello bigramma
 
 *Lettura: circa 35 minuti.* Costruiamo il primo vero modello di linguaggio contando le coppie di lettere. Poi lo riscriviamo come rete neurale, e scopriamo che le due strade arrivano allo stesso identico risultato.
 
@@ -485,7 +542,7 @@ for w in words:
 # N.sum() = 3073 bigrammi in totale
 ```
 
-La matrice $N$ (23×23) **è** il modello: la riga $i$ dice cosa segue il carattere $i$. Già i conteggi contengono conoscenza della lingua: i bigrammi più frequenti sono `a.` (196) e `o.` (160), cioè i nomi che finiscono in -a e in -o.
+La matrice $N$ ($23 \times 23$) **è** il modello: la riga $i$ dice cosa segue il carattere $i$. Già i conteggi contengono conoscenza della lingua: i bigrammi più frequenti sono `a.` (196) e `o.` (160), cioè i nomi che finiscono in -a e in -o.
 
 #### 3.2 Da conteggi a probabilità
 
@@ -494,7 +551,7 @@ P = N.float()
 P /= P.sum(1, keepdim=True)     # ogni riga ora somma a 1
 ```
 
-> **⚠️ Il bug del broadcasting.** Senza `keepdim=True` la somma ha forma `(23,)`, che il broadcasting allinea a destra e tratta come `(1, 23)`: ogni **colonna** $j$ viene divisa per la somma della **riga** $j$. Il risultato non è normalizzato né per righe né per colonne, e PyTorch non dà alcun errore: il modello sembra funzionare e dà risultati sbagliati. Regola pratica: dopo ogni normalizzazione controlla che `P.sum(1)` dia tutti 1.
+> **[Attenzione] Il bug del broadcasting.** Senza `keepdim=True` la somma ha forma `(23,)`, che il broadcasting allinea a destra e tratta come `(1, 23)`: ogni **colonna** $j$ viene divisa per la somma della **riga** $j$. Il risultato non è normalizzato né per righe né per colonne, e PyTorch non dà alcun errore: il modello sembra funzionare e dà risultati sbagliati. Regola pratica: dopo ogni normalizzazione controlla che `P.sum(1)` dia tutti 1.
 
 #### 3.3 Generare
 
@@ -536,11 +593,11 @@ print(-log_likelihood / n)      # circa 2.089
 
 #### 4.1 Come leggere quel 2,089
 
-| Riferimento | Loss | Significato |
-|---|---|---|
-| Modello uniforme (1/23 a ogni carattere) | $\log 23 = 3{,}135$ | il modello che non sa niente |
-| Bigramma | 2,089 | |
-| Modello perfetto | 0 | irraggiungibile: il testo non è deterministico |
+| Riferimento                              | Loss                | Significato                                    |
+| ---------------------------------------- | ------------------- | ---------------------------------------------- |
+| Modello uniforme (1/23 a ogni carattere) | $\log 23 = 3{,}135$ | il modello che non sa niente                   |
+| Bigramma                                 | 2,089               |                                                |
+| Modello perfetto                         | 0                   | irraggiungibile: il testo non è deterministico |
 
 Due modi intuitivi di leggerlo:
 
@@ -613,16 +670,16 @@ for k in range(6000):
 
 La loss parte da 3,135 e arriva a circa 2,091. Il valore iniziale non è un caso: con pesi piccoli tutti i logit sono quasi uguali, la softmax è quasi uniforme e la loss è quella del modello che non sa niente, $\log 23$.
 
-> **🔍 Controllo gratuito, da fare sempre.** All'inizio la loss deve valere circa $\log(\text{numero di classi})$, qui $\log 23 = 3{,}135$. Se parte più alta, la rete è "sicura di sé e sbagliata": l'inizializzazione è troppo grande. (Senza il fattore 0,01, cioè con `torch.randn` a scala piena, qui partirebbe da circa 3,6; nella Lezione 4 vedremo un caso molto più grave.) Se parte molto più bassa, quasi certamente l'input contiene di nascosto la risposta.
+> **[Verifica] Controllo gratuito, da fare sempre.** All'inizio la loss deve valere circa $\log(\text{numero di classi})$, qui $\log 23 = 3{,}135$. Se parte più alta, la rete è "sicura di sé e sbagliata": l'inizializzazione è troppo grande. (Senza il fattore 0,01, cioè con `torch.randn` a scala piena, qui partirebbe da circa 3,6; nella Lezione 4 vedremo un caso molto più grave.) Se parte molto più bassa, quasi certamente l'input contiene di nascosto la risposta.
 
 Il learning rate decrescente serve perché con un passo fisso e alto la loss arriva vicino al minimo e poi oscilla scavalcandolo. È una versione artigianale dello *scheduling* (Lezione 9).
 
 ### 6. La verifica: le due strade coincidono
 
-| Metodo | Loss |
-|---|---|
+| Metodo                  | Loss   |
+| ----------------------- | ------ |
 | Conteggi ($\alpha = 0$) | 2,0890 |
-| Rete neurale | 2,0907 |
+| Rete neurale            | 2,0907 |
 
 Non è una coincidenza. Imponendo gradiente nullo alla cross-entropy si ottiene proprio $p_{ij} = N_{ij} / \sum_k N_{ik}$, cioè i conteggi normalizzati: il modello a conteggi è **l'unico minimo** della rete (in termini di probabilità). La piccola differenza è solo convergenza incompleta sulle righe rare.
 
@@ -638,7 +695,7 @@ La penalità spinge $W$ verso 0, cioè tutti i logit verso valori uguali, cioè 
 
 ### 7. Esercizi
 
-1. **Trigrammi.** Estendi il modello a $P(x_t \mid x_{t-2}, x_{t-1})$, sia con i conteggi (tensore 23×23×23) sia con la rete (input one-hot di dimensione 46). Di quanto scende la loss?
+1. **Trigrammi.** Estendi il modello a $P(x_t \mid x_{t-2}, x_{t-1})$, sia con i conteggi (tensore $23 \times 23 \times 23$) sia con la rete (input one-hot di dimensione 46). Di quanto scende la loss?
 2. **Train/dev/test.** Dividi i nomi in 80/10/10 e valuta la loss sulle tre parti. Per il bigramma i valori saranno simili; per il trigramma comincerai a vedere un divario. Quel divario è l'**overfitting**, tema della Lezione 3.
 3. **Temperatura.** Prima della softmax dividi i logit per $\tau$: $p_j \propto \exp(z_j/\tau)$. Genera nomi con $\tau = 0{,}5,\ 1,\ 2$. È il parametro *temperature* delle API di ogni LLM: basso = scelte più prevedibili, alto = più varie e più strane.
 
@@ -665,7 +722,8 @@ Il limite non è la rete, è il **contesto**. Allungarlo contando esplode: con $
 
 ---
 
-## Lezione 3 — MLP ed embedding
+
+## Lezione 3 --- MLP ed embedding
 
 *Lettura: circa 30 minuti.* Allunghiamo il contesto da uno a tre caratteri seguendo il modello di Bengio (2003). Per farlo nasce l'oggetto più importante del corso: l'**embedding**.
 
@@ -673,10 +731,10 @@ Il limite non è la rete, è il **contesto**. Allungarlo contando esplode: con $
 
 Con i conteggi, ogni carattere di contesto in più moltiplica per 23 la dimensione della tabella:
 
-| Contesto | Celle della tabella |
-|---|---|
-| 1 carattere | $23^2 = 529$ |
-| 3 caratteri | $23^4 \approx 280\,000$ |
+| Contesto     | Celle della tabella       |
+| ------------ | ------------------------- |
+| 1 carattere  | $23^2 = 529$              |
+| 3 caratteri  | $23^4 \approx 280\,000$   |
 | 10 caratteri | $23^{11} \approx 10^{15}$ |
 
 Con 3 caratteri abbiamo 280 000 celle e solo 3073 esempi: la tabella è quasi tutta vuota. Le combinazioni crescono in modo esponenziale, i dati no. È il muro contro cui i modelli a n-grammi si sono fermati storicamente attorno a $n = 5$.
@@ -689,15 +747,15 @@ L'idea di Bengio: rappresentare ogni carattere con un **vettore di numeri reali*
 
 Ricorda la Lezione 2: one-hot per matrice = selezione di una riga. Quindi smettiamo di fingere che sia una moltiplicazione: la matrice $C$ (di forma $V \times d$) è la **tabella degli embedding**, e `C[i]` è il vettore del carattere $i$. Con 23 caratteri e $d = 10$, $C$ ha 230 numeri, appresi dal gradiente come tutti gli altri.
 
-| | One-hot | Embedding |
-|---|---|---|
-| Come è fatto | fisso, un 1 e tanti 0 | denso, numeri reali |
-| Distanze fra caratteri | tutte uguali | decise dal modello in base ai dati |
+|                        | One-hot               | Embedding                          |
+| ---------------------- | --------------------- | ---------------------------------- |
+| Come è fatto           | fisso, un 1 e tanti 0 | denso, numeri reali                |
+| Distanze fra caratteri | tutte uguali          | decise dal modello in base ai dati |
 
 **L'architettura di Bengio** (contesto di 3 caratteri):
 
 1. i 3 caratteri diventano 3 embedding tramite $C$;
-2. i 3 vettori vengono concatenati (3 × 10 = 30 numeri);
+2. i 3 vettori vengono concatenati ($3 \times 10 = 30$ numeri);
 3. uno strato nascosto con tanh;
 4. uno strato lineare produce 23 logit;
 5. softmax e cross-entropy, come sempre.
@@ -725,7 +783,7 @@ def build_dataset(words):
     return torch.tensor(X), torch.tensor(Y)
 ```
 
-Da `anna` nascono cinque esempi: `...→a`, `..a→n`, `.an→n`, `ann→a`, `nna→.`.
+Da `anna` nascono cinque esempi: `...` $\to$ `a`, `..a` $\to$ `n`, `.an` $\to$ `n`, `ann` $\to$ `a`, `nna` $\to$ `.`.
 
 #### 3.2 Parametri e forward
 
@@ -799,23 +857,21 @@ Xdev, Ydev = build_dataset(words[n1:n2])   # 10%: si scelgono gli iperparametri
 Xte,  Yte  = build_dataset(words[n2:])     # 10%: giudizio finale, una volta sola
 ```
 
-| Insieme | A cosa serve |
-|---|---|
-| **train** | si calcolano i gradienti e si muovono i pesi |
-| **dev** (o *validation*) | si scelgono dimensioni, learning rate, regolarizzazione |
-| **test** | si guarda **una volta sola**, alla fine; ogni volta che lo guardi e cambi qualcosa, smette di essere una misura onesta |
+- **train**: si calcolano i gradienti e si muovono i pesi
+- **dev** (o *validation*): si scelgono dimensioni, learning rate, regolarizzazione
+- **test**: si guarda **una volta sola**, alla fine; ogni volta che lo guardi e cambi qualcosa, smette di essere una misura onesta
 
 Addestriamo con il ciclo della sezione 4, usando `Xtr, Ytr` al posto di `X, Y` (circa 2 450 esempi). La loss di train scende a **0,98**, contro il 2,16 del bigramma con smoothing: sembra un trionfo. Ma sul dev la loss è **2,81**: su dati nuovi il modello è **peggio del bigramma**. Ha imparato a memoria questi nomi.
 
-> **Il divario train–dev è il termometro dell'overfitting.** Se train e dev sono vicine, il modello generalizza (o è troppo piccolo: *underfitting*). Se train è molto più bassa di dev, sta memorizzando. Conta sempre la coppia, mai un numero da solo.
+> **Il divario train--dev è il termometro dell'overfitting.** Se train e dev sono vicine, il modello generalizza (o è troppo piccolo: *underfitting*). Se train è molto più bassa di dev, sta memorizzando. Conta sempre la coppia, mai un numero da solo.
 
 Le leve contro l'overfitting: **più dati** (la cura migliore, e il motivo per cui gli LLM si addestrano su terabyte di testo), **modello più piccolo**, **regolarizzazione**. Aggiungiamo alla loss la penalità L2 della Lezione 2 (detta anche *weight decay*), con $\lambda = 0{,}01$:
 
-| Modello | train | dev |
-|---|---|---|
-| MLP, nessuna regolarizzazione | 0,98 | 2,81 |
-| MLP + weight decay 0,01 | 1,57 | **2,00** |
-| Bigramma con smoothing (confronto) | 2,16 | 2,16 |
+| Modello                            | train | dev      |
+| ---------------------------------- | ----- | -------- |
+| MLP, nessuna regolarizzazione      | 0,98  | 2,81     |
+| MLP + weight decay 0,01            | 1,57  | **2,00** |
+| Bigramma con smoothing (confronto) | 2,16  | 2,16     |
 
 La loss di train peggiora (il modello non può più memorizzare), quella di dev migliora e scende sotto il bigramma: ora il modello impara davvero la struttura su tre caratteri.
 
@@ -868,9 +924,10 @@ Restano due limiti: le reti profonde diventano difficili da addestrare (Lezione 
 5. Gli embedding appresi raggruppano da soli i caratteri simili (vocali e consonanti).
 
 ---
-# PARTE II — FAR FUNZIONARE L'ADDESTRAMENTO
 
-## Lezione 4 — Attivazioni, gradienti, BatchNorm
+# PARTE II --- FAR FUNZIONARE L'ADDESTRAMENTO
+
+## Lezione 4 --- Attivazioni, gradienti, BatchNorm
 
 *Lettura: circa 35 minuti.* La rete della Lezione 3 funzionava, ma per fortuna. Qui impariamo a misurare cosa succede dentro una rete mentre si addestra, e a renderla robusta.
 
@@ -897,7 +954,7 @@ b2 = torch.zeros(V)
 # loss iniziale: 3.135 = log 23
 ```
 
-> **Perché × 0,01 e non × 0?** Per l'ultimo strato anche 0 funzionerebbe. Ma azzerare **tutti** i pesi è un errore fatale: neuroni identici ricevono gradienti identici e restano identici per sempre. Serve casualità per rompere la simmetria. Regola: **mai zero negli strati interni, quasi zero nell'ultimo.**
+> **Perché $\boldsymbol{\times}$ 0,01 e non $\boldsymbol{\times}$ 0?** Per l'ultimo strato anche 0 funzionerebbe. Ma azzerare **tutti** i pesi è un errore fatale: neuroni identici ricevono gradienti identici e restano identici per sempre. Serve casualità per rompere la simmetria. Regola: **mai zero negli strati interni, quasi zero nell'ultimo.**
 
 ### 3. Le tanh sature
 
@@ -926,13 +983,13 @@ b1 = torch.zeros(n_hidden)
 # saturazione: dal 67% al 16%
 ```
 
-**L'esperimento in profondità** (5 strati 200→200 con tanh, deviazione standard delle attivazioni):
+**L'esperimento in profondità** (5 strati $200 \to 200$ con tanh, deviazione standard delle attivazioni):
 
-| Scala | Strato 1 | Strato 3 | Strato 5 | Diagnosi |
-|---|---|---|---|---|
-| $\sigma_w = 1$ (ingenua) | 0,97 | 0,97 | 0,97 | sembra sana, ma è saturata all'85% |
-| $\sigma_w = 1/\sqrt n$ | 0,63 | 0,41 | 0,32 | il segnale svanisce |
-| Kaiming ($\tfrac{5}{3}/\sqrt n$) | 0,76 | 0,67 | 0,65 | stabile: il "corridoio" |
+| Scala                            | Strato 1 | Strato 3 | Strato 5 | Diagnosi                           |
+| -------------------------------- | -------- | -------- | -------- | ---------------------------------- |
+| $\sigma_w = 1$ (ingenua)         | 0,97     | 0,97     | 0,97     | sembra sana, ma è saturata all'85% |
+| $\sigma_w = 1/\sqrt n$           | 0,63     | 0,41     | 0,32     | il segnale svanisce                |
+| Kaiming ($\tfrac{5}{3}/\sqrt n$) | 0,76     | 0,67     | 0,65     | stabile: il "corridoio"            |
 
 Prima morale della diagnostica: **la deviazione standard da sola non basta**, va guardata insieme alla saturazione.
 
@@ -982,13 +1039,13 @@ La BatchNorm si mette fra lo strato lineare e la non-linearità: `h = torch.tanh
 - **Gli esempi del batch si accoppiano.** La predizione su "anna" dipende da chi le è capitato accanto nel minibatch. È strano, ma il rumore che ne risulta fa da regolarizzatore gratuito.
 - **All'inferenza** il batch è di un solo esempio: per questo si usano le medie mobili `running_mean` e `running_var`. È l'origine di `model.train()` / `model.eval()` in PyTorch, e del bug classico di dimenticare `model.eval()`.
 
-**Tre addestramenti a confronto.** Rete più profonda: 30 input, 6 strati nascosti da 100 neuroni, 23 uscite; 20 000 passi, batch 64, learning rate 0,1 e poi 0,01. In tutte e tre le configurazioni l'ultimo strato parte già × 0,01, così il confronto riguarda solo gli strati nascosti.
+**Tre addestramenti a confronto.** Rete più profonda: 30 input, 6 strati nascosti da 100 neuroni, 23 uscite; 20 000 passi, batch 64, learning rate 0,1 e poi 0,01. In tutte e tre le configurazioni l'ultimo strato parte già $\times\,0{,}01$, così il confronto riguarda solo gli strati nascosti.
 
-| Configurazione | loss a 5 000 passi | train finale | dev |
-|---|---|---|---|
-| Init ingenua | 2,37 | 1,38 | 2,22 |
-| Kaiming | 1,02 | 0,97 | 3,29 |
-| Init ingenua + BatchNorm | 1,12 | 0,99 | 2,80 |
+| Configurazione           | loss a 5 000 passi | train finale | dev  |
+| ------------------------ | ------------------ | ------------ | ---- |
+| Init ingenua             | 2,37               | 1,38         | 2,22 |
+| Kaiming                  | 1,02               | 0,97         | 3,29 |
+| Init ingenua + BatchNorm | 1,12               | 0,99         | 2,80 |
 
 Cosa leggere:
 
@@ -998,7 +1055,7 @@ Cosa leggere:
 
 ### 6. La diagnostica: tre pannelli da guardare sempre
 
-1. **Statistiche delle attivazioni, strato per strato**: deviazione standard stabile con la profondità, saturazione sotto il 5% circa. Se cresce strato dopo strato → esplosione; se si spegne → svanimento.
+1. **Statistiche delle attivazioni, strato per strato**: deviazione standard stabile con la profondità, saturazione sotto il 5% circa. Se cresce strato dopo strato $\to$ esplosione; se si spegne $\to$ svanimento.
 2. **Statistiche dei gradienti, strato per strato**: devono essere comparabili fra gli strati. Due ordini di grandezza di differenza = nessun learning rate va bene per tutti.
 3. **Il rapporto aggiornamento/valore**: a ogni passo, per ogni tensore di parametri,
 
@@ -1010,7 +1067,7 @@ Con questi pannelli, "il training non converge" diventa una diagnosi: saturazion
 
 ### 7. Esercizi
 
-1. **Radiografia delle attivazioni.** Visualizza `plt.imshow(h.abs() > 0.99, cmap='gray')` (esempi × neuroni, bianco = saturo). Le colonne tutte bianche sono neuroni morti. Con quale scala di inizializzazione compaiono?
+1. **Radiografia delle attivazioni.** Visualizza `plt.imshow(h.abs() > 0.99, cmap='gray')` (esempi $\times$ neuroni, bianco = saturo). Le colonne tutte bianche sono neuroni morti. Con quale scala di inizializzazione compaiono?
 2. **Il gain è un termostato.** Sulla rete a 5 strati prova $g \in \{0{,}5,\ 1,\ 5/3,\ 3\}$: sotto il valore giusto il segnale svanisce, sopra satura.
 3. **Inventa la LayerNorm.** Modifica la BatchNorm perché normalizzi **per riga** (i neuroni di ogni singolo esempio) invece che per colonna: `mean(1, keepdim=True)`. Verifica che il risultato non dipenda più dal batch e che train ed eval coincidano senza medie mobili. È la normalizzazione che useremo nel Transformer.
 
@@ -1021,20 +1078,20 @@ Con questi pannelli, "il training non converge" diventa una diagnosi: saturazion
 - **Le connessioni residue**: una terza soluzione al problema della profondità, che qui non abbiamo usato. Dare al gradiente una "autostrada" che salta gli strati: $x + f(x)$ invece di $f(x)$. Le introduciamo nella Lezione 7.
 - **A grande scala questa lezione è il lavoro quotidiano**: picchi della loss, norme dei gradienti, precisione numerica. La differenza fra un run che converge e uno che brucia una settimana di GPU è spesso in un grafico come questi, guardato in tempo.
 
-> **🆕 Aggiornamento.** Nei modelli recenti (Llama, Mistral, Qwen, DeepSeek…) la LayerNorm è quasi sempre sostituita dalla **RMSNorm**, che divide solo per la radice della media dei quadrati, senza sottrarre la media: è più semplice e veloce e funziona altrettanto bene. Vedi l'[Appendice D](#appendice-d--cosa-è-cambiato-dopo-gpt-2-20192026).
+> **[Nuovo] Aggiornamento.** Nei modelli recenti (Llama, Mistral, Qwen, DeepSeek...) la LayerNorm è quasi sempre sostituita dalla **RMSNorm**, che divide solo per la radice della media dei quadrati, senza sottrarre la media: è più semplice e veloce e funziona altrettanto bene. Vedi l'[Appendice D](#appendice-d-cosa-è-cambiato-dopo-gpt-2-20192026).
 
 ### Riepilogo
 
-1. Al passo zero la loss deve valere $\log V$; se è più alta la rete è sicura di sé e sbagliata: si corregge con l'ultimo strato × 0,01.
+1. Al passo zero la loss deve valere $\log V$; se è più alta la rete è sicura di sé e sbagliata: si corregge con l'ultimo strato $\times\,0{,}01$.
 2. Le tanh sature bloccano il gradiente ($1 - t^2 \to 0$).
 3. Kaiming ($\sigma_w = g/\sqrt{n_{in}}$, $g = 5/3$ per la tanh) mantiene stabili le statistiche in profondità.
 4. La BatchNorm impone media 0 e varianza 1 a ogni strato: rende la rete robusta e regolarizza, ma accoppia il batch e separa train ed eval.
 5. In profondità un'inizializzazione sbagliata squilibra i gradienti di 100 volte fra gli strati.
-6. Diagnostica sempre: attivazioni, gradienti, rapporto aggiornamento/valore ≈ $10^{-3}$.
+6. Diagnostica sempre: attivazioni, gradienti, rapporto aggiornamento/valore $\approx 10^{-3}$.
 
 ---
 
-## Lezione 5 — Backprop a mano, senza autograd
+## Lezione 5 --- Backprop a mano, senza autograd
 
 *Lettura: circa 35 minuti.* Spegniamo `loss.backward()` e scriviamo noi ogni gradiente della rete della Lezione 4, verificandolo contro PyTorch. Dopo, i gradienti non saranno più magia.
 
@@ -1046,14 +1103,14 @@ Nella Lezione 1 l'abbiamo scritto per gli scalari. Sui tensori entrano in gioco 
 
 ### 2. Due regole che fanno quasi tutto il lavoro
 
-**Regola 1 — Il gradiente ha la stessa forma del tensore.** Se $W$ è (30, 200), anche $\partial L/\partial W$ è (30, 200). Spesso c'è un solo modo di combinare i pezzi disponibili perché le forme tornino: la derivazione diventa un puzzle a incastro.
+**Regola 1 --- Il gradiente ha la stessa forma del tensore.** Se $W$ è (30, 200), anche $\partial L/\partial W$ è (30, 200). Spesso c'è un solo modo di combinare i pezzi disponibili perché le forme tornino: la derivazione diventa un puzzle a incastro.
 
-**Regola 2 — Broadcasting e somma sono duali.**
+**Regola 2 --- Broadcasting e somma sono duali.**
 
-| Nel forward | Nel backward |
-|---|---|
-| copia (broadcast) | **somma** |
-| somma | **copia** |
+| Nel forward       | Nel backward |
+| ----------------- | ------------ |
+| copia (broadcast) | **somma**    |
+| somma             | **copia**    |
 
 È il `+=` della Lezione 1 in versione tensoriale: un valore copiato in $k$ posti influenza la loss per $k$ strade, e i contributi si sommano. Se nel forward un tensore (1, H) è stato copiato su (n, H), nel backward il suo gradiente torna (1, H) con `.sum(0, keepdim=True)`. **Le forme ti dicono dove sommare.**
 
@@ -1067,7 +1124,7 @@ Il trucco per non doverle ricordare: $\bar X$ deve essere $(n, d)$; hai in mano 
 
 ### 3. Il forward esploso in passi elementari
 
-Riprendiamo la rete a un solo strato nascosto delle Lezioni 3–4, con la BatchNorm (embedding → lineare → BatchNorm → tanh → lineare → cross-entropy), e scriviamo ogni operazione come una riga separata. Per tenere piccoli i tensori usiamo 64 neuroni nascosti invece di 200. Teniamo apposta il bias `b1` prima della BatchNorm, per dimostrare che è inutile.
+Riprendiamo la rete a un solo strato nascosto delle Lezioni 3--4, con la BatchNorm (embedding $\to$ lineare $\to$ BatchNorm $\to$ tanh $\to$ lineare $\to$ cross-entropy), e scriviamo ogni operazione come una riga separata. Per tenere piccoli i tensori usiamo 64 neuroni nascosti invece di 200. Teniamo apposta il bias `b1` prima della BatchNorm, per dimostrare che è inutile.
 
 ```python
 # parametri: C (23, 10), W1 (30, 64), b1 (64,), W2 (64, 23), b2 (23,), bngain e bnbias (1, 64)
@@ -1167,7 +1224,7 @@ In pratica due blocchi si derivano una volta per tutte e si scrivono in una riga
 
 **Cross-entropy.** Per un esempio con target $y$: $\ell = -\log p_y$, e
 
-$$\frac{\partial \ell}{\partial z_j} = p_j - \mathbb{1}[j = y]$$
+$$\frac{\partial \ell}{\partial z_j} = p_j - \mathbf{1}[j = y]$$
 
 ```python
 dlogits = F.softmax(logits, 1)
@@ -1191,7 +1248,7 @@ I tre termini: il gradiente che passa; meno la media del gradiente sul batch; me
 
 ### 6. Addestrare senza autograd
 
-Con questi gradienti scritti a mano (le due scorciatoie, le formule del matmul, la tanh, l'accumulo sull'embedding) la stessa rete (questa volta con 200 neuroni nascosti, come nella Lezione 4, e senza `b1`) si addestra per 20 000 passi senza mai chiamare `loss.backward()`. Risultati: loss iniziale 3,144 ≈ $\log 23$, train 0,99, dev 2,50, in linea con la Lezione 4. Nomi generati: `ciriana, tizio, corrado, liberto, geltrude, dana, siliana, achiara, ascania, sara`.
+Con questi gradienti scritti a mano (le due scorciatoie, le formule del matmul, la tanh, l'accumulo sull'embedding) la stessa rete (questa volta con 200 neuroni nascosti, come nella Lezione 4, e senza `b1`) si addestra per 20 000 passi senza mai chiamare `loss.backward()`. Risultati: loss iniziale 3,144 $\approx \log 23$, train 0,99, dev 2,50, in linea con la Lezione 4. Nomi generati: `ciriana, tizio, corrado, liberto, geltrude, dana, siliana, achiara, ascania, sara`.
 
 ### 7. Esercizi
 
@@ -1202,7 +1259,7 @@ Con questi gradienti scritti a mano (le due scorciatoie, le formule del matmul, 
 ### 8. Verso gli LLM
 
 - **Il backward dell'attenzione è già nelle tue mani**: tre prodotti matriciali, una softmax e una maschera.
-- **La memoria è il backward.** Tutte le attivazioni salvate (`h`, `bnraw`, `counts`…) sono il motivo per cui addestrare costa molta più memoria che usare il modello. Da qui nascono l'*activation checkpointing* (non salvare, ricalcolare nel backward) e FlashAttention (Lezione 9).
+- **La memoria è il backward.** Tutte le attivazioni salvate (`h`, `bnraw`, `counts`...) sono il motivo per cui addestrare costa molta più memoria che usare il modello. Da qui nascono l'*activation checkpointing* (non salvare, ricalcolare nel backward) e FlashAttention (Lezione 9).
 - **I kernel fusi sono questa lezione, industrializzata.** Chi scrive kernel CUDA o Triton per i Transformer fa ciò che hai fatto tu: prende un pezzo di grafo, ne deriva il backward in forma chiusa e lo implementa a mano.
 - **Il debug a scala.** Quando un run su migliaia di GPU produce un NaN, qualcuno apre esattamente queste formule: varianza con batch degeneri? `exp` senza il max?
 
@@ -1217,7 +1274,7 @@ Con questi gradienti scritti a mano (le due scorciatoie, le formule del matmul, 
 
 ---
 
-## Lezione 6 — WaveNet e la gerarchia
+## Lezione 6 --- WaveNet e la gerarchia
 
 *Lettura: circa 25 minuti.* Il contesto passa da 3 a 8 caratteri, e invece di schiacciarlo tutto insieme lo fondiamo a coppie, come WaveNet. Nel farlo costruiamo un piccolo `torch.nn` nostro.
 
@@ -1228,7 +1285,7 @@ L'MLP di Bengio concatena tutto il contesto e lo schiaccia in un unico strato. C
 - **cresce male**: la matrice del primo strato cresce in proporzione al contesto;
 - **fonde male**: tutti i caratteri vengono mescolati subito, alla pari, senza l'idea che i caratteri vicini abbiano più da dirsi di quelli lontani.
 
-La proposta, presa da **WaveNet** (DeepMind, 2016, nato per generare audio): fondere il contesto **a coppie, in più livelli**. Prima coppie di caratteri, poi coppie di coppie, e così via: 8 → 4 → 2 → 1. L'informazione vicina si incontra subito, quella lontana più tardi, e a ogni livello c'è una non-linearità che permette rappresentazioni via via più astratte.
+La proposta, presa da **WaveNet** (DeepMind, 2016, nato per generare audio): fondere il contesto **a coppie, in più livelli**. Prima coppie di caratteri, poi coppie di coppie, e così via: $8 \to 4 \to 2 \to 1$. L'informazione vicina si incontra subito, quella lontana più tardi, e a ogni livello c'è una non-linearità che permette rappresentazioni via via più astratte.
 
 C'è un dettaglio importante: a ogni livello si usa **la stessa matrice** per tutte le coppie. La regola per fondere due caratteri adiacenti non dipende da dove si trova la coppia nella parola. Un'operazione identica fatta scorrere lungo una sequenza è una **convoluzione**; la nostra, che a ogni livello salta il doppio delle posizioni, è una **convoluzione dilatata causale**, il mattone di WaveNet.
 
@@ -1321,7 +1378,7 @@ Flatten(2)       -> (32, 136)      Linear -> (32, 68)
 Linear finale    -> (32, 23)
 ```
 
-Si legge l'albero sull'asse di mezzo: 8 → 4 → 2 → sparito. **Prima le forme, poi l'addestramento.**
+Si legge l'albero sull'asse di mezzo: $8 \to 4 \to 2 \to$ sparito. **Prima le forme, poi l'addestramento.**
 
 ### 3. Il bug della BatchNorm
 
@@ -1340,7 +1397,7 @@ Il resto della classe non cambia: `mean` e `var` di forma `(C,)` funzionano sia 
 
 Quanto costa il bug sulla loss? Quasi niente: in questo esperimento la versione sbagliata ha dev 2,16 contro 2,26 della corretta (a questa scala il rumore in più regolarizza per caso). **È proprio questo il punto: la loss non ti avvisa.** L'unico allarme è una forma, (4, 68) dove doveva esserci (68,).
 
-> **⚠️ Convenzione di PyTorch.** `torch.nn.BatchNorm1d` su input 3D vuole i canali in seconda posizione, (B, C, T); il nostro layout è (B, T, C). Un motivo in più per sapere cosa fa un modulo invece di fidarsi del nome.
+> **[Attenzione] Convenzione di PyTorch.** `torch.nn.BatchNorm1d` su input 3D vuole i canali in seconda posizione, (B, C, T); il nostro layout è (B, T, C). Un motivo in più per sapere cosa fa un modulo invece di fidarsi del nome.
 
 ### 4. L'esperimento onesto: la gerarchia conviene?
 
@@ -1350,12 +1407,12 @@ Tre modelli principali, stessa ricetta (Kaiming, BatchNorm, ultimo strato piccol
 
 **Con il weight decay migliore per ciascuno** (quanto bene generalizzano):
 
-| Modello | train | dev |
-|---|---|---|
-| Piatto, contesto 3 | 1,50 | 2,049 |
-| Piatto, contesto 8 | 1,67 | 2,047 |
-| Gerarchico, contesto 8 | 1,10 | 2,259 |
-| Gerarchico piccolo (34 neuroni nascosti) | 1,91 | 2,203 |
+| Modello                                  | train | dev   |
+| ---------------------------------------- | ----- | ----- |
+| Piatto, contesto 3                       | 1,50  | 2,049 |
+| Piatto, contesto 8                       | 1,67  | 2,047 |
+| Gerarchico, contesto 8                   | 1,10  | 2,259 |
+| Gerarchico piccolo (34 neuroni nascosti) | 1,91  | 2,203 |
 
 Due cose che non ci aspettavamo:
 
@@ -1379,7 +1436,7 @@ La conclusione giusta non è "la gerarchia non funziona", ma **"i guadagni di ar
 
 ### Riepilogo
 
-1. Il contesto lungo si fonde a livelli (8 → 4 → 2 → 1), con una non-linearità a ogni livello.
+1. Il contesto lungo si fonde a livelli ($8 \to 4 \to 2 \to 1$), con una non-linearità a ogni livello.
 2. Lo stesso `Linear` serve tutte le posizioni di un livello: è una convoluzione dilatata causale.
 3. I moduli separano l'architettura dal ciclo di addestramento.
 4. Prima di addestrare, controlla le forme: trovano bug che la loss nasconde.
@@ -1387,9 +1444,10 @@ La conclusione giusta non è "la gerarchia non funziona", ma **"i guadagni di ar
 6. I guadagni di architettura si pagano con i dati.
 
 ---
-# PARTE III — IL TRANSFORMER
 
-## Lezione 7 — Costruiamo GPT da zero
+# PARTE III --- IL TRANSFORMER
+
+## Lezione 7 --- Costruiamo GPT da zero
 
 *Lettura: circa 45 minuti.* Il cuore del corso. Ricaviamo l'attenzione da un'idea semplicissima, una media che scorre, la componiamo in un Transformer e addestriamo un piccolo GPT su un racconto italiano.
 
@@ -1445,7 +1503,7 @@ Ogni posizione emette tre vettori, ottenuti con tre proiezioni lineari apprese d
 - **key** $K = XW_K$: "cosa ho da offrire";
 - **value** $V = XW_V$: "cosa comunico se mi ascolti".
 
-(Attenzione: da qui in poi $V$ indica i *value*, non più la dimensione del vocabolario delle Lezioni 2–6.)
+(Attenzione: da qui in poi $V$ indica i *value*, non più la dimensione del vocabolario delle Lezioni 2--6.)
 
 L'affinità fra la query di una posizione e la key di un'altra è un prodotto scalare, e diventa il peso con cui la seconda influenza la prima:
 
@@ -1517,7 +1575,7 @@ class FeedForward(nn.Module):
         return self.net(x)
 ```
 
-L'espansione ×4 dà spazio per un calcolo più ricco. La **GELU** è una versione "morbida" della ReLU: vale circa $x$ per $x$ grande e positivo, circa 0 per $x$ molto negativo, con una transizione liscia ($\text{GELU}(x) = x\,\Phi(x)$, dove $\Phi$ è la funzione di ripartizione della normale). GPT-2 ne usa un'approssimazione che contiene una tanh, ma la funzione si comporta come una ReLU, non come una tanh.
+L'espansione $\times 4$ dà spazio per un calcolo più ricco. La **GELU** è una versione "morbida" della ReLU: vale circa $x$ per $x$ grande e positivo, circa 0 per $x$ molto negativo, con una transizione liscia ($\text{GELU}(x) = x\,\Phi(x)$, dove $\Phi$ è la funzione di ripartizione della normale). GPT-2 ne usa un'approssimazione che contiene una tanh, ma la funzione si comporta come una ReLU, non come una tanh.
 
 #### 3.3 Il blocco: due "autostrade" per il gradiente
 
@@ -1567,7 +1625,7 @@ class GPT(nn.Module):
 
 **Perché serve `pos_emb`?** Il prodotto $QK^\top$ e la softmax non sanno nulla dell'ordine: confrontano contenuti, e lo stesso carattere produce la stessa query e la stessa key in qualunque posizione si trovi. (La maschera causale dà solo un'informazione indiretta: quanti token ci sono prima.) Gli **embedding di posizione** aggiungono a ogni token l'informazione "sono in posizione $t$".
 
-Forme sul nostro modello (C = 64, 4 teste, 4 strati, contesto 64): input (32, 64) → embedding (32, 64, 64) → dopo i 4 blocchi **(32, 64, 64)** → logit (32, 64, 56). **Un blocco non cambia la forma**: per questo se ne possono impilare quanti se ne vogliono.
+Forme sul nostro modello (C = 64, 4 teste, 4 strati, contesto 64): input (32, 64) $\to$ embedding (32, 64, 64) $\to$ dopo i 4 blocchi **(32, 64, 64)** $\to$ logit (32, 64, 56). **Un blocco non cambia la forma**: per questo se ne possono impilare quanti se ne vogliono.
 
 Nessun pezzo è nuovo tranne `CausalSelfAttention`: l'embedding viene dalla Lezione 3, la LayerNorm dalla 4, `Sequential` dalla 6, la cross-entropy dalla 2, la feed-forward è l'MLP delle Lezioni 1 e 3. I residui sono una semplice somma.
 
@@ -1619,9 +1677,9 @@ for step in range(1500):
 
 #### 5.2 La curva di addestramento
 
-| Passo | 1 | 100 | 400 | 1000 | 1500 |
-|---|---|---|---|---|---|
-| loss di batch | 4,00 | 2,33 | 1,27 | 0,33 | 0,26 |
+| Passo               | 1    | 100  | 400               | 1000 | 1500 |
+| ------------------- | ---- | ---- | ----------------- | ---- | ---- |
+| loss di batch       | 4,00 | 2,33 | 1,27              | 0,33 | 0,26 |
 | loss di validazione | 3,98 | 2,33 | **1,56** (minimo) | 2,16 | 2,56 |
 
 La loss iniziale (4,00) è vicina a $\log 56 = 4{,}03$: partenza onesta. La validazione scende fino al passo 400, poi **risale** mentre il training continua a scendere: overfitting, come nella Lezione 3. Con 211 000 parametri e 20 000 caratteri, memorizzare è facile.
@@ -1642,7 +1700,7 @@ def generate(model, start_text, n_new, temperature=1.0):
 ```
 
 - **Modello fermato al passo 400** (*early stopping*): testo con l'aspetto dell'italiano, parole spesso inventate.
-- **Modello al passo 1500** (overfit): frasi più fluide, ma alcune sono **citazioni letterali** del racconto, per esempio "— So accendere il fuoco, — disse Elia, quando".
+- **Modello al passo 1500** (overfit): frasi più fluide, ma alcune sono **citazioni letterali** del racconto, per esempio "--- So accendere il fuoco, --- disse Elia, quando".
 
 Misurato: la frazione di frammenti di 8 caratteri copiati alla lettera dal testo di addestramento è **13%** per il modello fermato in tempo e **64%** per quello in overfit. Il secondo non genera più: recita a memoria.
 
@@ -1658,7 +1716,7 @@ Guardando i pesi di attenzione del primo strato sulla frase "la lanterna non si 
 
 1. **Encoder contro decoder.** Togli la maschera. Su che tipo di compito avrebbe senso? Perché per generare testo sarebbe un errore che rende la loss bassa ma finta?
 2. **Senza posizione.** Elimina `pos_emb` e riaddestra. La loss peggiora poco o tanto? Perché?
-3. **Predici, poi misura.** Con un racconto dieci volte più lungo, il minimo della validazione arriverà prima o dopo il passo 400? Il divario train–validazione al passo 1500 sarà più grande o più piccolo? Scrivi la previsione, poi verifica.
+3. **Predici, poi misura.** Con un racconto dieci volte più lungo, il minimo della validazione arriverà prima o dopo il passo 400? Il divario train--validazione al passo 1500 sarà più grande o più piccolo? Scrivi la previsione, poi verifica.
 
 ### 9. Verso gli LLM
 
@@ -1667,7 +1725,7 @@ Guardando i pesi di attenzione del primo strato sulla frase "la lanterna non si 
 - **La KV-cache.** Il nostro `generate` ricalcola tutto il contesto a ogni nuovo carattere. I sistemi veri tengono in memoria le key e i value già calcolati e, a ogni passo, calcolano solo quelli del **nuovo token**: stessa matematica, molto meno lavoro.
 - **Cosa manca:** un tokenizer vero (Lezione 8), la scala (Lezione 9), e la capacità di rispondere invece di continuare (Lezione 10).
 
-> **🆕 Aggiornamento.** I modelli recenti hanno cambiato alcuni pezzi di questo blocco, lasciando intatta l'idea: posizioni codificate con **RoPE** invece di `pos_emb`, **RMSNorm** invece di LayerNorm, MLP di tipo **SwiGLU**, attenzione con key/value condivise fra teste (**GQA/MQA**) per ridurre la KV-cache. Dettagli nell'[Appendice D](#appendice-d--cosa-è-cambiato-dopo-gpt-2-20192026).
+> **[Nuovo] Aggiornamento.** I modelli recenti hanno cambiato alcuni pezzi di questo blocco, lasciando intatta l'idea: posizioni codificate con **RoPE** invece di `pos_emb`, **RMSNorm** invece di LayerNorm, MLP di tipo **SwiGLU**, attenzione con key/value condivise fra teste (**GQA/MQA**) per ridurre la KV-cache. Dettagli nell'[Appendice D](#appendice-d-cosa-è-cambiato-dopo-gpt-2-20192026).
 
 ### Riepilogo
 
@@ -1681,7 +1739,7 @@ Guardando i pesi di attenzione del primo strato sulla frase "la lanterna non si 
 
 ---
 
-## Lezione 8 — Il tokenizer: BPE da zero
+## Lezione 8 --- Il tokenizer: BPE da zero
 
 *Lettura: circa 30 minuti.* Costruiamo il pezzo che trasforma il testo in interi, e scopriamo che molte stranezze degli LLM nascono qui.
 
@@ -1696,14 +1754,14 @@ Serve una via di mezzo: unità più grandi di un carattere e più piccole di una
 
 **Unicode non basta.** `ord(c)` dà un numero a ogni carattere, ma i caratteri sono oltre 150 000 e lo standard continua a crescere: una tabella di embedding enorme e instabile.
 
-**UTF-8 sì.** Rappresenta ogni carattere come 1–4 byte, ciascuno fra 0 e 255. Qualunque testo, in qualunque lingua, diventa una sequenza in un **alfabeto fisso di 256 simboli**. Le lettere accentate italiane usano 2 byte (`è` → `[195, 168]`), la lineetta `—` ne usa 3, un ideogramma cinese 3, un'emoji fino a 4.
+**UTF-8 sì.** Rappresenta ogni carattere come 1--4 byte, ciascuno fra 0 e 255. Qualunque testo, in qualunque lingua, diventa una sequenza in un **alfabeto fisso di 256 simboli**. Le lettere accentate italiane usano 2 byte (`è` $\to$ `[195, 168]`), la lineetta (U+2014) ne usa 3, un ideogramma cinese 3, un'emoji fino a 4.
 
 **Ma i byte da soli allungano le sequenze.** Serve comprimere: trovare le coppie di simboli più frequenti e fonderle in un simbolo nuovo, ripetutamente. È un algoritmo di compressione del 1994 (Philip Gage), adattato alla tokenizzazione da Sennrich e colleghi nel 2015 e diventato lo standard con GPT-2.
 
 **L'algoritmo in tre frasi:**
 
 1. Parti dai byte UTF-8: vocabolario iniziale di 256 simboli.
-2. Conta tutte le coppie adiacenti, prendi la più frequente, sostituiscila con un simbolo nuovo (256, poi 257, …).
+2. Conta tutte le coppie adiacenti, prendi la più frequente, sostituiscila con un simbolo nuovo (256, poi 257, ...).
 3. Ripeti sul testo aggiornato tante volte quanti merge vuoi. Vocabolario finale: 256 + numero di merge.
 
 Esempio su `"abababcababa"`: la coppia più frequente è `ab` (5 volte); diventa il simbolo 256 e la sequenza passa da 12 a 7 simboli: `[256, 256, 256, 99, 256, 256, 97]` (99 è `c`, 97 è `a`). Il giro successivo lavora sui nuovi simboli (per esempio `256 256` = `abab`): così nascono token lunghi più lettere.
@@ -1754,14 +1812,14 @@ def decode(ids, vocab):
     return b''.join(vocab[i] for i in ids).decode('utf-8', errors='replace')
 ```
 
-> **⚠️ Il dettaglio facile da sbagliare.** `encode` deve applicare i merge **nell'ordine in cui sono stati imparati**, non scegliere la coppia più frequente nel testo nuovo. Altrimenti produce una tokenizzazione diversa da quella su cui il modello è stato addestrato.
+> **[Attenzione] Il dettaglio facile da sbagliare.** `encode` deve applicare i merge **nell'ordine in cui sono stati imparati**, non scegliere la coppia più frequente nel testo nuovo. Altrimenti produce una tokenizzazione diversa da quella su cui il modello è stato addestrato.
 
 #### 3.1 Sul nostro racconto
 
 300 merge (vocabolario 556): da 22 847 byte a **8 459 token**, cioè 2,7 byte per token.
 
 - I primi merge sono "vocale + spazio" (`a `, `e `, `o `, `i `): l'italiano finisce quasi ogni parola in vocale. L'algoritmo non sa nulla di grammatica, sa solo contare.
-- Più avanti nascono token lunghi legati al racconto: `Pietrarsa`, `lanterna`, `— disse`, perfino `.\n\nCapitolo ` (12 byte).
+- Più avanti nascono token lunghi legati al racconto: `Pietrarsa`, `lanterna`, `\u2014 disse` (la lineetta del dialogo seguita da `disse`), perfino `.\n\nCapitolo ` (12 byte).
 - Su una frase nuova, "La lanterna di Pietrarsa non si è mai spenta, nemmeno una notte.", si ottengono 19 token, e `decode(encode(s)) == s`.
 
 **Token speciali.** I tokenizer veri riservano id per marcatori che non vengono dal testo, come `<|endoftext|>` (fine di un documento e inizio del successivo). È la stessa idea del `.` della Lezione 2, applicata a documenti interi. Si gestiscono a parte: si divide il testo sul marcatore, si codificano i pezzi e si inserisce l'id riservato.
@@ -1769,12 +1827,12 @@ def decode(ids, vocab):
 ### 4. I rendimenti decrescenti
 
 | Vocabolario | Merge | Token nel racconto | Byte/token |
-|---|---|---|---|
-| 256 | 0 | 22 847 | 1,00 |
-| 356 | 100 | 12 031 | 1,90 |
-| 556 | 300 | 8 459 | 2,70 |
-| 806 | 550 | 6 725 | 3,40 |
-| 1 056 | 800 | 5 768 | 3,96 |
+| ----------- | ----- | ------------------ | ---------- |
+| 256         | 0     | 22 847             | 1,00       |
+| 356         | 100   | 12 031             | 1,90       |
+| 556         | 300   | 8 459              | 2,70       |
+| 806         | 550   | 6 725              | 3,40       |
+| 1 056       | 800   | 5 768              | 3,96       |
 
 I primi 100 merge quasi raddoppiano la compressione; i successivi rincorrono schemi sempre più rari. GPT-2 si ferma a 50 257 token, un compromesso fra sequenze corte e una tabella di embedding non enorme.
 
@@ -1795,9 +1853,9 @@ I primi 100 merge quasi raddoppiano la compressione; i successivi rincorrono sch
 
 - **Il nostro BPE è lo stesso di GPT-2, tranne un dettaglio.** GPT-2 prima divide il testo con un'espressione regolare (lettere, numeri, punteggiatura, spazi separati) e applica i merge solo dentro i pezzi: così non nascono token come `cane.` che mescolano parola e punteggiatura. La libreria vera di OpenAI è `tiktoken`.
 - **SentencePiece**, usata da Llama 1 e 2, dalle prime versioni di Mistral, da Gemma e da altri, tratta il testo grezzo (spazi inclusi) senza regole di pre-divisione specifiche per una lingua.
-- **La dimensione del vocabolario è un compromesso.** Vocabolario grande → sequenze più corte, ma tabella di embedding e strato di output più grandi. Vocabolario piccolo → l'opposto.
+- **La dimensione del vocabolario è un compromesso.** Vocabolario grande $\to$ sequenze più corte, ma tabella di embedding e strato di output più grandi. Vocabolario piccolo $\to$ l'opposto.
 
-> **🆕 Aggiornamento.** La tendenza recente è verso vocabolari più grandi e più multilingue: circa 100 000 token per GPT-4 (`cl100k_base`), circa 200 000 per GPT-4o (`o200k_base`), 128 000 per Llama 3 (che è passato da SentencePiece a un BPE basato su `tiktoken`), 256 000 per Gemma. Vocabolari più grandi riducono il divario di costo per lingue come l'italiano. In ricerca si studiano anche modelli che lavorano direttamente sui byte, senza tokenizer fisso (per esempio la *Byte Latent Transformer* di Meta, 2024), ma non sono ancora lo standard.
+> **[Nuovo] Aggiornamento.** La tendenza recente è verso vocabolari più grandi e più multilingue: circa 100 000 token per GPT-4 (`cl100k_base`), circa 200 000 per GPT-4o (`o200k_base`), 128 000 per Llama 3 (che è passato da SentencePiece a un BPE basato su `tiktoken`), 256 000 per Gemma. Vocabolari più grandi riducono il divario di costo per lingue come l'italiano. In ricerca si studiano anche modelli che lavorano direttamente sui byte, senza tokenizer fisso (per esempio la *Byte Latent Transformer* di Meta, 2024), ma non sono ancora lo standard.
 
 ### Riepilogo
 
@@ -1809,9 +1867,10 @@ I primi 100 merge quasi raddoppiano la compressione; i successivi rincorrono sch
 6. Un tokenizer comprime bene ciò che somiglia al suo corpus: le lingue meno rappresentate pagano più token.
 
 ---
-# PARTE IV — DALLA TEORIA AL MODELLO REALE
 
-## Lezione 9 — Riprodurre GPT-2 (124M)
+# PARTE IV --- DALLA TEORIA AL MODELLO REALE
+
+## Lezione 9 --- Riprodurre GPT-2 (124M)
 
 *Lettura: circa 35 minuti.* Nessuna nuova idea di machine learning: l'architettura è quella della Lezione 7. Cambia tutto ciò che sta intorno: come inizializzarla, come farla girare in fretta, come addestrarla bene, con quali dati, e come giudicarla.
 
@@ -1821,18 +1880,18 @@ I primi 100 merge quasi raddoppiano la compressione; i successivi rincorrono sch
 
 Il nostro GPT ha 211 000 parametri e si addestra in pochi minuti su CPU. GPT-2 (124M) ne ha **124 439 808**, circa 590 volte di più, ed è addestrato su miliardi di token. Stessa architettura. Cosa cambia in mezzo? Quasi solo ingegneria, in quattro gruppi:
 
-| Gruppo | Tecniche |
-|---|---|
-| Ritocchi al modello | pesi condivisi, inizializzazione scalata |
-| Velocità | precisione mista, `torch.compile`, FlashAttention |
-| Addestramento | gradient accumulation, schedule del learning rate, gradient clipping |
-| Dati e valutazione | FineWeb, HellaSwag |
+| Gruppo              | Tecniche                                                             |
+| ------------------- | -------------------------------------------------------------------- |
+| Ritocchi al modello | pesi condivisi, inizializzazione scalata                             |
+| Velocità            | precisione mista, `torch.compile`, FlashAttention                    |
+| Addestramento       | gradient accumulation, schedule del learning rate, gradient clipping |
+| Dati e valutazione  | FineWeb, HellaSwag                                                   |
 
 ### 2. I ritocchi al modello
 
 #### 2.1 Pesi condivisi (*weight tying*)
 
-La tabella degli embedding (`wte`: token → vettore) e l'ultimo strato (`lm_head`: vettore → logit sui token) fanno lavori speculari. GPT-2 usa **la stessa matrice** per entrambi (idea di Press e Wolf, 2016). Oltre a risparmiare parametri, costringe le due mappe a condividere la stessa geometria.
+La tabella degli embedding (`wte`: token $\to$ vettore) e l'ultimo strato (`lm_head`: vettore $\to$ logit sui token) fanno lavori speculari. GPT-2 usa **la stessa matrice** per entrambi (idea di Press e Wolf, 2016). Oltre a risparmiare parametri, costringe le due mappe a condividere la stessa geometria.
 
 ```python
 model.lm_head.weight = model.tok_emb.weight    # stesso tensore, non una copia
@@ -1924,7 +1983,7 @@ Un gradiente sano (norma 0,9) non viene toccato. Uno con un elemento esploso a 8
 
 ### 5. Nutrirlo: FineWeb
 
-Il nostro racconto non ha duplicati né testo di bassa qualità. Un corpus vero è l'opposto. **FineWeb** (Hugging Face, 2024) contiene circa **15 000 miliardi di token** estratti da 96 raccolte di Common Crawl (2013–2024), con due passaggi fondamentali:
+Il nostro racconto non ha duplicati né testo di bassa qualità. Un corpus vero è l'opposto. **FineWeb** (Hugging Face, 2024) contiene circa **15 000 miliardi di token** estratti da 96 raccolte di Common Crawl (2013--2024), con due passaggi fondamentali:
 
 - **Deduplicazione**: il web si ripete moltissimo; senza togliere i duplicati il modello spreca capacità a memorizzare copie.
 - **Filtri di qualità**: euristiche e classificatori rimuovono spam, boilerplate, testo degenere.
@@ -1937,13 +1996,13 @@ La riproduzione di Karpathy usa un campione di **10 miliardi di token di FineWeb
 
 "Loss di validazione 3,2" è difficile da interpretare. **HellaSwag** dà un numero più leggibile: dato un contesto, il modello deve scegliere fra quattro continuazioni quella sensata (le altre tre sono costruite per sembrare plausibili in superficie). Non serve addestramento speciale: si calcola la cross-entropy media di ciascuna continuazione e si sceglie quella con loss più bassa. A caso si ottiene il 25%.
 
-| Modello | Accuratezza HellaSwag |
-|---|---|
-| Caso (4 scelte) | 25,0% |
-| GPT-2 124M originale (OpenAI, 2019) | ≈ 29,4% |
-| Riproduzione 124M su 10B token FineWeb-Edu (Karpathy) | ≈ 30% (supera GPT-2) |
-| GPT-3 Small 125M (paper di GPT-3, 300B token) | 33,7% |
-| GPT-2 XL 1,5B | ≈ 48,9% |
+| Modello                                               | Accuratezza HellaSwag        |
+| ----------------------------------------------------- | ---------------------------- |
+| Caso (4 scelte)                                       | 25,0%                        |
+| GPT-2 124M originale (OpenAI, 2019)                   | $\approx$ 29,4%              |
+| Riproduzione 124M su 10B token FineWeb-Edu (Karpathy) | $\approx$ 30% (supera GPT-2) |
+| GPT-3 Small 125M (paper di GPT-3, 300B token)         | 33,7%                        |
+| GPT-2 XL 1,5B                                         | $\approx$ 48,9%              |
 
 GPT-3 Small, praticamente la stessa architettura e taglia di GPT-2 124M, ottiene circa 4 punti in più grazie alla ricetta di addestramento (molti più token, batch più grandi). E la riproduzione supera GPT-2 addestrandosi su soli 10 miliardi di token, ma di qualità alta (FineWeb-Edu). **La ricetta e i dati contano quanto l'architettura.**
 
@@ -1951,7 +2010,7 @@ HellaSwag oggi è quasi saturo per i modelli di frontiera (oltre il 95%), ma per
 
 ### 7. Le leggi di scala
 
-> **🆕 Integrazione.** Il corso originale rimanda più volte alle "leggi di scala della Lezione 9" senza poi trattarle. Ecco l'essenziale.
+> **[Nuovo] Integrazione.** Il corso originale rimanda più volte alle "leggi di scala della Lezione 9" senza poi trattarle. Ecco l'essenziale.
 
 La loss di un modello di linguaggio scende in modo **prevedibile** (come una legge di potenza) aumentando tre cose: **parametri** $N$, **token di addestramento** $D$, **calcolo** $C$ (approssimativamente $C \approx 6ND$ operazioni). Due lavori fondamentali:
 
@@ -1966,7 +2025,7 @@ Nella pratica recente si va **ben oltre** i 20 token per parametro (Llama 3 8B �
 
 1. **Il tying al variare del vocabolario.** Calcola la percentuale di parametri risparmiata con vocabolari di 1 000, 10 000 e 50 257 token, tenendo fisso il resto di GPT-2. Cresce o cala? Perché?
 2. **Il muro di bf16.** Ripeti la somma di 100 000 incrementi con incrementi di 0,01, 0,001, 0,0001. A che valore la somma smette di crescere in ciascun caso? Perché dipende dal rapporto fra incremento e somma corrente?
-3. **Lo schedule al contrario.** Scrivi una funzione che, dati token totali e token per batch, calcoli `max_steps` e un `warmup_steps` ragionevole (1–2% del totale). Applicala al racconto della Lezione 7: ha senso uno schedule così elaborato per 22 000 caratteri?
+3. **Lo schedule al contrario.** Scrivi una funzione che, dati token totali e token per batch, calcoli `max_steps` e un `warmup_steps` ragionevole (1--2% del totale). Applicala al racconto della Lezione 7: ha senso uno schedule così elaborato per 22 000 caratteri?
 
 ### 9. Verso gli LLM
 
@@ -1974,7 +2033,7 @@ Ognuna di queste tecniche esiste per un motivo misurabile: senza tying un terzo 
 
 Cosa resta: abbiamo un modello che **continua** il testo. Non risponde a domande, non segue istruzioni, non rifiuta richieste pericolose: ha solo imparato a prevedere il token successivo di internet. È l'argomento della Lezione 10.
 
-> **🆕 Per proseguire.** Nell'ottobre 2025 Karpathy ha pubblicato **nanochat**, il seguito naturale di questa lezione: un unico repository che copre tokenizer, pre-training, fine-tuning, una fase di reinforcement learning, inferenza con KV-cache e un'interfaccia di chat, addestrabile in poche ore su un nodo con 8 GPU. Usa un'architettura aggiornata (RoPE, RMSNorm senza parametri, normalizzazione di query e key, MLP con ReLU², embedding e `lm_head` non condivisi) e l'ottimizzatore **Muon** insieme ad AdamW. Vedi l'[Appendice D](#appendice-d--cosa-è-cambiato-dopo-gpt-2-20192026).
+> **[Nuovo] Per proseguire.** Nell'ottobre 2025 Karpathy ha pubblicato **nanochat**, il seguito naturale di questa lezione: un unico repository che copre tokenizer, pre-training, fine-tuning, una fase di reinforcement learning, inferenza con KV-cache e un'interfaccia di chat, addestrabile in poche ore su un nodo con 8 GPU. Usa un'architettura aggiornata (RoPE, RMSNorm senza parametri, normalizzazione di query e key, MLP con ReLU$^2$, embedding e `lm_head` non condivisi) e l'ottimizzatore **Muon** insieme ad AdamW. Vedi l'[Appendice D](#appendice-d-cosa-è-cambiato-dopo-gpt-2-20192026).
 
 ### Riepilogo
 
@@ -1988,7 +2047,8 @@ Cosa resta: abbiamo un modello che **continua** il testo. Non risponde a domande
 
 ---
 
-## Lezione 10 — Da modello base ad assistente
+
+## Lezione 10 --- Da modello base ad assistente
 
 *Lettura: circa 30 minuti.* Nessuna nuova architettura: il modello resta quello della Lezione 7. Cambiano i dati e l'obiettivo dell'addestramento. È la differenza fra un modello che completa internet e un assistente che risponde.
 
@@ -2007,7 +2067,7 @@ Il nostro modello è troppo piccolo per dire qualcosa sulla qualità, ma il feno
 
 ### 2. Due obiettivi diversi
 
-Il **pre-training** (Lezioni 2–9) ottimizza una cosa sola: la probabilità del token successivo su un corpus enorme e non etichettato. Le etichette sono gratis (sono il testo stesso), ma l'obiettivo non sa nulla di "utile", "onesto" o "conversazione": se il prompt somiglia a un forum sconclusionato, il modello continua come un forum sconclusionato.
+Il **pre-training** (Lezioni 2--9) ottimizza una cosa sola: la probabilità del token successivo su un corpus enorme e non etichettato. Le etichette sono gratis (sono il testo stesso), ma l'obiettivo non sa nulla di "utile", "onesto" o "conversazione": se il prompt somiglia a un forum sconclusionato, il modello continua come un forum sconclusionato.
 
 Il **post-training** è l'insieme di fasi che trasformano il modello base in assistente. Sorpresa: cambia pochissimo rispetto a quanto già costruito.
 
@@ -2040,7 +2100,7 @@ Dopo l'SFT il modello sa **imitare** la forma di una buona risposta. Ma per molt
 
 1. **Raccogliere preferenze.** Per lo stesso prompt $x$ si generano più risposte; una persona indica quale preferisce. Si ottengono terne $(x, y_w, y_l)$: prompt, risposta vincente, risposta perdente.
 
-2. **Addestrare un reward model**, un modello **separato** (di solito inizializzato dal modello SFT) in cui l'ultimo strato produce un solo numero, il punteggio di qualità $r(x, y)$, invece della softmax sul vocabolario. Si usa il modello di **Bradley–Terry**:
+2. **Addestrare un reward model**, un modello **separato** (di solito inizializzato dal modello SFT) in cui l'ultimo strato produce un solo numero, il punteggio di qualità $r(x, y)$, invece della softmax sul vocabolario. Si usa il modello di **Bradley--Terry**:
 
 $$P(y_w \succ y_l \mid x) = \sigma\big(r(x, y_w) - r(x, y_l)\big), \qquad L_{RM} = -\log \sigma\big(r(x, y_w) - r(x, y_l)\big)$$
 
@@ -2050,7 +2110,7 @@ dove $\sigma$ è la sigmoide. Esempio: con $r(y_w) = 2{,}3$ e $r(y_l) = 0{,}4$, 
 
 ### 5. DPO: saltare la parte complicata
 
-**Direct Preference Optimization** (Rafailov e colleghi, 2023) mostra che, con lo stesso modello di Bradley–Terry, il problema RLHF ha una soluzione in forma chiusa. Sostituendola, il reward model sparisce e resta una loss calcolabile direttamente sulle probabilità del modello:
+**Direct Preference Optimization** (Rafailov e colleghi, 2023) mostra che, con lo stesso modello di Bradley--Terry, il problema RLHF ha una soluzione in forma chiusa. Sostituendola, il reward model sparisce e resta una loss calcolabile direttamente sulle probabilità del modello:
 
 $$L_{DPO} = -\log \sigma\left(\beta \log\frac{\pi_\theta(y_w \mid x)}{\pi_{ref}(y_w \mid x)} - \beta \log\frac{\pi_\theta(y_l \mid x)}{\pi_{ref}(y_l \mid x)}\right)$$
 
@@ -2062,10 +2122,10 @@ Niente reward model separato, niente campionamento durante l'addestramento, nien
 
 **Esempio numerico** (log-probabilità sommate sui token della risposta, $\beta = 0{,}1$):
 
-| | $\log \pi_\theta$ | $\log \pi_{ref}$ | "reward implicita" $\beta(\log\pi_\theta - \log\pi_{ref})$ |
-|---|---|---|---|
-| Risposta vincente | −18,2 | −19,5 | +0,13 |
-| Risposta perdente | −25,1 | −20,3 | −0,48 |
+|                   | $\log \pi_\theta$ | $\log \pi_{ref}$ | "reward implicita" $\beta(\log\pi_\theta - \log\pi_{ref})$ |
+| ----------------- | ----------------- | ---------------- | ---------------------------------------------------------- |
+| Risposta vincente | $-18{,}2$         | $-19{,}5$        | $+0{,}13$                                                  |
+| Risposta perdente | $-25{,}1$         | $-20{,}3$        | $-0{,}48$                                                  |
 
 Il modello ha reso la risposta buona più probabile del riferimento e quella cattiva meno probabile: la direzione giusta. Loss: $-\log\sigma(0{,}13 + 0{,}48) = 0{,}434$. Le derivate rispetto alle due log-probabilità valgono $-0{,}035$ e $+0{,}035$: uguali e opposte. La loss spinge su la vincente e giù la perdente con lo stesso peso.
 
@@ -2073,7 +2133,7 @@ Il modello ha reso la risposta buona più probabile del riferimento e quella cat
 
 La previsione del token successivo non contiene alcun incentivo a dire "non lo so": il modello produce sempre una distribuzione sul token successivo, e la continuazione più plausibile nello stile di una risposta, vera o no. Se i dati di post-training non contengono abbastanza esempi di incertezza espressa onestamente, il modello non impara quel comportamento.
 
-> **🆕 Aggiornamento (2025).** Uno studio di OpenAI (*Why Language Models Hallucinate*, Kalai e colleghi, settembre 2025) aggiunge un punto importante: **anche il modo in cui si valutano i modelli incentiva le allucinazioni**. La maggior parte dei benchmark dà punti per la risposta giusta e zero sia per quella sbagliata sia per "non lo so". Come uno studente a un test a crocette, al modello conviene tirare a indovinare. Gli autori propongono di cambiare i criteri dei benchmark esistenti in modo da penalizzare gli errori sicuri più dell'astensione. Nel loro esempio, un modello che si astiene spesso ha accuratezza simile a uno che non si astiene quasi mai, ma un tasso di errore molto più basso.
+> **[Nuovo] Aggiornamento (2025).** Uno studio di OpenAI (*Why Language Models Hallucinate*, Kalai e colleghi, settembre 2025) aggiunge un punto importante: **anche il modo in cui si valutano i modelli incentiva le allucinazioni**. La maggior parte dei benchmark dà punti per la risposta giusta e zero sia per quella sbagliata sia per "non lo so". Come uno studente a un test a crocette, al modello conviene tirare a indovinare. Gli autori propongono di cambiare i criteri dei benchmark esistenti in modo da penalizzare gli errori sicuri più dell'astensione. Nel loro esempio, un modello che si astiene spesso ha accuratezza simile a uno che non si astiene quasi mai, ma un tasso di errore molto più basso.
 
 ### 7. Strumenti e ragionamento
 
@@ -2081,7 +2141,7 @@ La previsione del token successivo non contiene alcun incentivo a dire "non lo s
 
 **Modelli di ragionamento.** Sono modelli che, prima della risposta finale, producono una lunga catena di passaggi intermedi.
 
-> **🆕 Aggiornamento (2024–2026).** Questa è stata la novità più importante dopo la scrittura del corso.
+> **[Nuovo] Aggiornamento (2024--2026).** Questa è stata la novità più importante dopo la scrittura del corso.
 >
 > - **o1 (OpenAI, settembre 2024)** ha mostrato che si può migliorare la qualità facendo "pensare" il modello più a lungo al momento della risposta (*test-time compute*), invece che solo ingrandendolo.
 > - **DeepSeek-R1 (gennaio 2025)** ha reso pubblica una ricetta: reinforcement learning con **reward verificabili** (*RLVR*). Invece di un reward model appreso dalle preferenze, la reward è una regola: la risposta matematica coincide con quella corretta? il codice passa i test? C'è anche un piccolo premio per il formato (ragionamento fra tag `<think>`, risposta separata). Il ragionamento lungo, le verifiche e le correzioni "emergono" dall'addestramento senza essere scritti a mano.
@@ -2095,23 +2155,23 @@ La previsione del token successivo non contiene alcun incentivo a dire "non lo s
 In pseudocodice (le funzioni `train`, `clone`, `ppo_train`, `grpo_train` e `frozen_copy` non esistono: indicano le fasi):
 
 ```python
-# Fase 0 — pre-training (Lezioni 2–9): previsione del token successivo su testo grezzo
+# Fase 0 -- pre-training (Lezioni 2-9): previsione del token successivo su testo grezzo
 model = GPT(...)
 train(model, dataset=fineweb, loss=cross_entropy)                 # -> modello base
 
-# Fase 1 — SFT: stessa loss, dati curati, mascherata sulle risposte
+# Fase 1 -- SFT: stessa loss, dati curati, mascherata sulle risposte
 train(model, dataset=instruction_pairs, loss=masked_cross_entropy)
 
-# Fase 2, strada A — RLHF
+# Fase 2, strada A -- RLHF
 reward_model = clone(model)
 reward_model.lm_head = nn.Linear(n_embd, 1)                       # un punteggio, non una softmax
 train(reward_model, dataset=preference_pairs, loss=bradley_terry_loss)
 ppo_train(model, reward_model, reference_model=frozen_copy(model))
 
-# Fase 2, strada B — DPO: niente reward model, niente campionamento
+# Fase 2, strada B -- DPO: niente reward model, niente campionamento
 train(model, dataset=preference_pairs, reference_model=frozen_copy(model), loss=dpo_loss)
 
-# Fase 3 (modelli di ragionamento) — RL con reward verificabili, per esempio GRPO
+# Fase 3 (modelli di ragionamento) -- RL con reward verificabili, per esempio GRPO
 grpo_train(model, problems=math_and_code, reward=check_answer)
 ```
 
@@ -2120,7 +2180,7 @@ Il pre-training resta di gran lunga la fase più costosa (settimane su migliaia 
 ### 9. Esercizi
 
 1. **Prova il modello base.** Prova altri prompt in forma di istruzione ("Riassumi la storia in una frase:", "Elenca i personaggi:") sul modello della Lezione 7. Segue mai il formato? Se puoi, confronta con GPT-2 originale tramite la libreria `transformers`.
-2. **Il ruolo di β.** Ricalcola la loss DPO dell'esempio con $\beta \in \{0{,}01,\ 0{,}1,\ 1\}$. Cosa succede per $\beta \to 0$? E per $\beta$ grande? Collega la risposta al vincolo di non allontanarsi dal riferimento.
+2. **Il ruolo di $\boldsymbol{\beta}$.** Ricalcola la loss DPO dell'esempio con $\beta \in \{0{,}01,\ 0{,}1,\ 1\}$. Cosa succede per $\beta \to 0$? E per $\beta$ grande? Collega la risposta al vincolo di non allontanarsi dal riferimento.
 3. **Etichette invertite.** Scambia $y_w$ e $y_l$ nell'esempio DPO. La loss sale o scende? Le derivate cambiano segno? Che cosa dice questo sull'importanza della qualità dei dati di preferenza?
 
 ### 10. Fine del corso
@@ -2135,18 +2195,19 @@ Guardando indietro: nella Lezione 1 una derivata era "di quanto cambia l'output 
 
 1. Un modello base continua il testo nello stile che ha visto; non risponde se non ha visto esempi di risposte.
 2. SFT: stessa cross-entropy, dati curati di (istruzione, risposta), loss calcolata solo sulle risposte.
-3. RLHF: un reward model separato, addestrato con Bradley–Terry sulle preferenze, poi PPO con penalità KL (serve perché il campionamento non è derivabile).
+3. RLHF: un reward model separato, addestrato con Bradley--Terry sulle preferenze, poi PPO con penalità KL (serve perché il campionamento non è derivabile).
 4. DPO elimina reward model e campionamento: una loss calcolabile in un forward e un backward.
 5. Le allucinazioni nascono dall'obiettivo stesso e sono incentivate da benchmark che premiano il tirare a indovinare.
 6. Strumenti: token speciali e un protocollo. Ragionamento: RL con reward verificabili (RLVR, GRPO).
 7. Il pre-training resta la fase più costosa; il post-training decide il comportamento.
 
 ---
+
 # APPENDICI
 
-> **🆕 Nota.** Il programma del corso originale prometteva tre appendici pratiche (A, B, C), ma il PDF non le contiene: si chiude rimandando a esse. Le versioni qui sotto sono **sintesi introduttive** scritte per questa revisione: spiegano i concetti e indicano dove approfondire, ma non hanno la profondità né le verifiche numeriche delle lezioni. L'Appendice D è nuova.
+> **[Nuovo] Nota.** Il programma del corso originale prometteva tre appendici pratiche (A, B, C), ma il PDF non le contiene: si chiude rimandando a esse. Le versioni qui sotto sono **sintesi introduttive** scritte per questa revisione: spiegano i concetti e indicano dove approfondire, ma non hanno la profondità né le verifiche numeriche delle lezioni. L'Appendice D è nuova.
 
-## Appendice A — Da nanoGPT a llama.cpp
+## Appendice A --- Da nanoGPT a llama.cpp
 
 **L'idea.** Il modello della Lezione 7 è, alla fine, una sequenza fissa di operazioni: consultazione di tabelle, prodotti matriciali, softmax, normalizzazioni, somme. Per **usarlo** (inferenza) non serve PyTorch né l'autograd: basta un programma che legga i pesi da un file ed esegua quelle operazioni. È ciò che fanno `llama.cpp` (Georgi Gerganov, 2023) e, in versione didattica, `llama2.c` di Karpathy (circa 700 righe di C per eseguire un modello Llama 2).
 
@@ -2164,7 +2225,7 @@ Guardando indietro: nella Lezione 1 una derivata era "di quanto cambia l'output 
 
 **Per approfondire:** i repository `karpathy/llama2.c` e `ggml-org/llama.cpp`.
 
-## Appendice B — Quantizzazione e GGUF
+## Appendice B --- Quantizzazione e GGUF
 
 **L'idea.** Nella Lezione 9 abbiamo visto bf16: 16 bit per numero invece di 32. La **quantizzazione** spinge oltre: 8, 4 o anche meno bit per peso. Un modello da 7 miliardi di parametri occupa circa 14 GB in bf16 e circa 4 GB a 4 bit: entra nella memoria di un portatile.
 
@@ -2186,13 +2247,13 @@ def dequantize(q, s):
     return (q.float() * s).view(-1)
 ```
 
-**Cosa si perde.** A 8 bit la qualità resta praticamente invariata. A 4 bit di solito la perdita è piccola, soprattutto con metodi più raffinati (scale diverse per sotto-blocchi, scelta dei pesi più importanti). Sotto i 3–4 bit la qualità cala in modo visibile.
+**Cosa si perde.** A 8 bit la qualità resta praticamente invariata. A 4 bit di solito la perdita è piccola, soprattutto con metodi più raffinati (scale diverse per sotto-blocchi, scelta dei pesi più importanti). Sotto i 3--4 bit la qualità cala in modo visibile.
 
 **GGUF** è il formato di file di `llama.cpp`: un unico file che contiene pesi (anche quantizzati), iperparametri e tokenizer. I nomi tipo `Q4_K_M` o `Q8_0` indicano lo schema di quantizzazione (numero di bit e variante).
 
 **Esercizio.** Quantizza a 8 e a 4 bit i pesi del GPT della Lezione 7, ricaricali e misura la loss di validazione. Di quanto peggiora? Prova blocchi di 16, 32, 128 numeri.
 
-## Appendice C — Fine-tuning con LoRA e QLoRA
+## Appendice C --- Fine-tuning con LoRA e QLoRA
 
 **Il problema.** Fare fine-tuning completo (Lezione 10) di un modello da miliardi di parametri richiede memoria per i pesi, per i gradienti e per gli stati di AdamW (due numeri in più per ogni parametro): diverse volte la memoria occupata dai soli pesi.
 
@@ -2226,21 +2287,33 @@ Perché funziona: l'adattamento a un compito specifico sembra richiedere cambiam
 
 **Per approfondire:** le librerie `peft` (Hugging Face) e `bitsandbytes`.
 
-## Appendice D — Cosa è cambiato dopo GPT-2 (2019–2026)
+## Appendice D --- Cosa è cambiato dopo GPT-2 (2019--2026)
 
 Il corso costruisce GPT-2, un'architettura del 2019. L'idea di fondo è la stessa nei modelli di oggi, ma molti pezzi sono stati sostituiti. Questa appendice è una mappa, non una trattazione completa.
 
 ### D.1 L'architettura
 
-| GPT-2 (Lezioni 7 e 9) | Modelli recenti (Llama, Mistral, Qwen, DeepSeek, Gemma…) | Perché |
-|---|---|---|
-| Embedding di posizione appresi | **RoPE** (*rotary position embedding*): query e key vengono "ruotate" di un angolo che dipende dalla posizione | il prodotto $q \cdot k$ dipende dalla **distanza** fra le posizioni; si estende meglio a contesti più lunghi |
-| LayerNorm | **RMSNorm**: divide per la radice della media dei quadrati, senza sottrarre la media | più semplice e veloce, risultati equivalenti |
-| MLP con GELU, espansione ×4 | **SwiGLU**: due proiezioni, una "fa da cancello" all'altra | migliore qualità a parità di parametri |
-| Bias in tutti i `Linear` | Nessun bias | meno parametri, nessuna perdita |
-| Ogni testa ha le sue K e V | **GQA / MQA**: più teste di query condividono le stesse K e V | la KV-cache diventa molte volte più piccola: contesti lunghi e inferenza più economici |
-| Tutto il modello lavora per ogni token | **Mixture of Experts (MoE)**: il feed-forward è diviso in tanti "esperti" e un router ne attiva solo pochi per token | molti parametri totali, poco calcolo per token (Mixtral, DeepSeek-V3, Qwen3-MoE…) |
-| Contesto 1 024 token | Contesti da 128 000 a oltre 1 milione di token | RoPE estesa, FlashAttention, attenzione locale a finestra in alcuni strati |
+- Embedding di posizione appresi
+  - *Modelli recenti (Llama, Mistral, Qwen, DeepSeek, Gemma...)*: **RoPE** (*rotary position embedding*): query e key vengono "ruotate" di un angolo che dipende dalla posizione
+  - *Perché*: il prodotto $q \cdot k$ dipende dalla **distanza** fra le posizioni; si estende meglio a contesti più lunghi
+- LayerNorm
+  - *Modelli recenti (Llama, Mistral, Qwen, DeepSeek, Gemma...)*: **RMSNorm**: divide per la radice della media dei quadrati, senza sottrarre la media
+  - *Perché*: più semplice e veloce, risultati equivalenti
+- MLP con GELU, espansione $\times 4$
+  - *Modelli recenti (Llama, Mistral, Qwen, DeepSeek, Gemma...)*: **SwiGLU**: due proiezioni, una "fa da cancello" all'altra
+  - *Perché*: migliore qualità a parità di parametri
+- Bias in tutti i `Linear`
+  - *Modelli recenti (Llama, Mistral, Qwen, DeepSeek, Gemma...)*: Nessun bias
+  - *Perché*: meno parametri, nessuna perdita
+- Ogni testa ha le sue K e V
+  - *Modelli recenti (Llama, Mistral, Qwen, DeepSeek, Gemma...)*: **GQA / MQA**: più teste di query condividono le stesse K e V
+  - *Perché*: la KV-cache diventa molte volte più piccola: contesti lunghi e inferenza più economici
+- Tutto il modello lavora per ogni token
+  - *Modelli recenti (Llama, Mistral, Qwen, DeepSeek, Gemma...)*: **Mixture of Experts (MoE)**: il feed-forward è diviso in tanti "esperti" e un router ne attiva solo pochi per token
+  - *Perché*: molti parametri totali, poco calcolo per token (Mixtral, DeepSeek-V3, Qwen3-MoE...)
+- Contesto 1 024 token
+  - *Modelli recenti (Llama, Mistral, Qwen, DeepSeek, Gemma...)*: Contesti da 128 000 a oltre 1 milione di token
+  - *Perché*: RoPE estesa, FlashAttention, attenzione locale a finestra in alcuni strati
 
 Alcuni modelli aggiungono anche la **normalizzazione di query e key** (QK-norm) prima del prodotto scalare, che stabilizza l'addestramento: è la stessa preoccupazione della Lezione 7 (non far saturare la softmax).
 
@@ -2270,26 +2343,24 @@ Alcuni modelli aggiungono anche la **normalizzazione di query e key** (QK-norm) 
 
 ## Glossario minimo
 
-| Termine | Significato |
-|---|---|
-| **Attenzione (self-attention)** | Meccanismo con cui ogni token raccoglie informazione dagli altri, con pesi decisi dal contenuto (Lezione 7). |
-| **Backpropagation** | Calcolo di tutti i gradienti con una passata all'indietro sul grafo (Lezione 1). |
-| **Batch / minibatch** | Gruppo di esempi usato per stimare il gradiente in un passo (Lezione 3). |
-| **BatchNorm / LayerNorm / RMSNorm** | Normalizzazioni delle attivazioni: sul batch, sul singolo esempio, sul singolo esempio senza sottrarre la media (Lezione 4, Appendice D). |
-| **Cross-entropy** | La loss dei modelli di linguaggio: logaritmo negativo della probabilità del token giusto (Lezione 2). |
-| **Embedding** | Vettore appreso che rappresenta un token (Lezione 3). |
-| **Fine-tuning** | Continuare ad addestrare un modello già addestrato su dati specifici (Lezione 10, Appendice C). |
-| **Gradiente** | Vettore delle derivate della loss rispetto a tutti i parametri (Lezione 1). |
-| **KV-cache** | Memoria delle key e dei value già calcolati, per generare un token alla volta senza ricalcolare tutto (Lezione 7). |
-| **Learning rate** | Ampiezza del passo di discesa del gradiente (Lezioni 1, 3, 9). |
-| **Logit** | Punteggio grezzo prima della softmax (Lezione 2). |
-| **Loss** | Numero che misura quanto il modello sbaglia; l'addestramento la minimizza. |
-| **Overfitting** | Il modello memorizza i dati di addestramento invece di generalizzare: train bassa, dev alta (Lezione 3). |
-| **Perplessità** | $e^{\text{loss}}$: fra quante opzioni equiprobabili il modello è "indeciso" (Lezione 2). |
-| **Post-training** | Le fasi dopo il pre-training: SFT, RLHF/DPO, RL con reward verificabili (Lezione 10). |
-| **Pre-training** | Addestramento sulla previsione del token successivo su un grande corpus (Lezioni 2–9). |
-| **Residuo (connessione residua)** | $x + f(x)$: una "autostrada" per il gradiente attraverso la profondità (Lezione 7). |
-| **Softmax** | Trasforma logit in probabilità: esponenziale e normalizzazione (Lezione 2). |
-| **Temperatura** | Divisore dei logit prima della softmax: bassa = scelte prevedibili, alta = più varie (Lezione 2). |
-| **Token / tokenizer** | Unità di testo su cui lavora il modello / il componente che divide il testo in token (Lezione 8). |
-| **Weight decay** | Regolarizzazione che spinge i pesi verso zero (Lezioni 2, 3, 7). |
+- **Attenzione (self-attention)**: Meccanismo con cui ogni token raccoglie informazione dagli altri, con pesi decisi dal contenuto (Lezione 7).
+- **Backpropagation**: Calcolo di tutti i gradienti con una passata all'indietro sul grafo (Lezione 1).
+- **Batch / minibatch**: Gruppo di esempi usato per stimare il gradiente in un passo (Lezione 3).
+- **BatchNorm / LayerNorm / RMSNorm**: Normalizzazioni delle attivazioni: sul batch, sul singolo esempio, sul singolo esempio senza sottrarre la media (Lezione 4, Appendice D).
+- **Cross-entropy**: La loss dei modelli di linguaggio: logaritmo negativo della probabilità del token giusto (Lezione 2).
+- **Embedding**: Vettore appreso che rappresenta un token (Lezione 3).
+- **Fine-tuning**: Continuare ad addestrare un modello già addestrato su dati specifici (Lezione 10, Appendice C).
+- **Gradiente**: Vettore delle derivate della loss rispetto a tutti i parametri (Lezione 1).
+- **KV-cache**: Memoria delle key e dei value già calcolati, per generare un token alla volta senza ricalcolare tutto (Lezione 7).
+- **Learning rate**: Ampiezza del passo di discesa del gradiente (Lezioni 1, 3, 9).
+- **Logit**: Punteggio grezzo prima della softmax (Lezione 2).
+- **Loss**: Numero che misura quanto il modello sbaglia; l'addestramento la minimizza.
+- **Overfitting**: Il modello memorizza i dati di addestramento invece di generalizzare: train bassa, dev alta (Lezione 3).
+- **Perplessità**: $e^{\text{loss}}$: fra quante opzioni equiprobabili il modello è "indeciso" (Lezione 2).
+- **Post-training**: Le fasi dopo il pre-training: SFT, RLHF/DPO, RL con reward verificabili (Lezione 10).
+- **Pre-training**: Addestramento sulla previsione del token successivo su un grande corpus (Lezioni 2--9).
+- **Residuo (connessione residua)**: $x + f(x)$: una "autostrada" per il gradiente attraverso la profondità (Lezione 7).
+- **Softmax**: Trasforma logit in probabilità: esponenziale e normalizzazione (Lezione 2).
+- **Temperatura**: Divisore dei logit prima della softmax: bassa = scelte prevedibili, alta = più varie (Lezione 2).
+- **Token / tokenizer**: Unità di testo su cui lavora il modello / il componente che divide il testo in token (Lezione 8).
+- **Weight decay**: Regolarizzazione che spinge i pesi verso zero (Lezioni 2, 3, 7).
