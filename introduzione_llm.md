@@ -1,6 +1,5 @@
 # LLM corso introduttivo
 
-
 Il seguente documento, inspirato dalle lezioni di Andrej Karpathy "Neural Networks: Zero to Hero" descrive un percorso di apprendimento che descrive tutti i dettagli che permettono di generare una rete neurale.
 
 ---
@@ -9,24 +8,24 @@ Il seguente documento, inspirato dalle lezioni di Andrej Karpathy "Neural Networ
 
 - [Guida al corso](#guida-al-corso)
 - **Parte I --- Le fondamenta**
-  - [Lezione 1 --- micrograd: derivata e backpropagation](#lezione-1-micrograd-derivata-e-backpropagation)
-  - [Lezione 2 --- Il modello bigramma](#lezione-2-il-modello-bigramma)
-  - [Lezione 3 --- MLP ed embedding](#lezione-3-mlp-ed-embedding)
+  - [Lezione 1 --- micrograd: derivata e backpropagation](#lezione-1-----micrograd-derivata-e-backpropagation)
+  - [Lezione 2 --- Il modello bigramma](#lezione-2-----il-modello-bigramma)
+  - [Lezione 3 --- MLP ed embedding](#lezione-3-----mlp-ed-embedding)
 - **Parte II --- Far funzionare l'addestramento**
-  - [Lezione 4 --- Attivazioni, gradienti, BatchNorm](#lezione-4-attivazioni-gradienti-batchnorm)
-  - [Lezione 5 --- Backprop a mano, senza autograd](#lezione-5-backprop-a-mano-senza-autograd)
-  - [Lezione 6 --- WaveNet e la gerarchia](#lezione-6-wavenet-e-la-gerarchia)
+  - [Lezione 4 --- Attivazioni, gradienti, BatchNorm](#lezione-4-----attivazioni-gradienti-batchnorm)
+  - [Lezione 5 --- Backprop a mano, senza autograd](#lezione-5-----backprop-a-mano-senza-autograd)
+  - [Lezione 6 --- WaveNet e la gerarchia](#lezione-6-----wavenet-e-la-gerarchia)
 - **Parte III --- Il Transformer**
-  - [Lezione 7 --- Costruiamo GPT da zero](#lezione-7-costruiamo-gpt-da-zero)
-  - [Lezione 8 --- Il tokenizer: BPE da zero](#lezione-8-il-tokenizer-bpe-da-zero)
+  - [Lezione 7 --- Costruiamo GPT da zero](#lezione-7-----costruiamo-gpt-da-zero)
+  - [Lezione 8 --- Il tokenizer: BPE da zero](#lezione-8-----il-tokenizer-bpe-da-zero)
 - **Parte IV --- Dalla teoria al modello reale**
-  - [Lezione 9 --- Riprodurre GPT-2 (124M)](#lezione-9-riprodurre-gpt-2-124m)
-  - [Lezione 10 --- Da modello base ad assistente](#lezione-10-da-modello-base-ad-assistente)
+  - [Lezione 9 --- Riprodurre GPT-2 (124M)](#lezione-9-----riprodurre-gpt-2-124m)
+  - [Lezione 10 --- Da modello base ad assistente](#lezione-10-----da-modello-base-ad-assistente)
 - **Appendici**
-  - [A --- Da nanoGPT a llama.cpp](#appendice-a-da-nanogpt-a-llama.cpp)
-  - [B --- Quantizzazione e GGUF](#appendice-b-quantizzazione-e-gguf)
-  - [C --- Fine-tuning con LoRA e QLoRA](#appendice-c-fine-tuning-con-lora-e-qlora)
-  - [D --- Cosa è cambiato dopo GPT-2 (2019--2026)](#appendice-d-cosa-è-cambiato-dopo-gpt-2-20192026)
+  - [A --- Da nanoGPT a llama.cpp](#appendice-a-----da-nanogpt-a-llamacpp)
+  - [B --- Quantizzazione e GGUF](#appendice-b-----quantizzazione-e-gguf)
+  - [C --- Fine-tuning con LoRA e QLoRA](#appendice-c-----fine-tuning-con-lora-e-qlora)
+  - [D --- Cosa è cambiato dopo GPT-2 (2019--2026)](#appendice-d-----cosa-è-cambiato-dopo-gpt-2-2019--2026)
   - [Glossario minimo](#glossario-minimo)
 
 ---
@@ -42,7 +41,7 @@ Faremo questo partendo da semplici classi scritte in Python e poi evolvere quant
 
 Il percorso formativo segue i seguenti, fondamentali passaggi tutti equamente importanti.
 
-```
+```text
 derivata -> backprop -> neurone -> MLP -> embedding -> attenzione
         -> Transformer -> tokenizer -> scala -> post-training
 ```
@@ -94,7 +93,7 @@ PyTorch **non** è un prerequisito: costruiamo noi le sue parti essenziali e poi
 
 ### Come usarlo
 
-Il corso va fatto **scrivendo il codice**, non solo leggendolo. 
+Il corso va fatto **scrivendo il codice**, non solo leggendolo.
 E' una buona pratica cercare di ripercorrere almeno mentalmente il capitolo che si è terminato prima di passare al successivo.
 
 **Nota sui numeri.** Molti risultati (loss, percentuali) dipendono dal seme casuale e dalla versione delle librerie. Se ottieni valori un po' diversi, controlla l'ordine di grandezza e la tendenza, non la terza cifra decimale.
@@ -722,7 +721,6 @@ Il limite non è la rete, è il **contesto**. Allungarlo contando esplode: con $
 
 ---
 
-
 ## Lezione 3 --- MLP ed embedding
 
 *Lettura: circa 30 minuti.* Allunghiamo il contesto da uno a tre caratteri seguendo il modello di Bengio (2003). Per farlo nasce l'oggetto più importante del corso: l'**embedding**.
@@ -1078,7 +1076,7 @@ Con questi pannelli, "il training non converge" diventa una diagnosi: saturazion
 - **Le connessioni residue**: una terza soluzione al problema della profondità, che qui non abbiamo usato. Dare al gradiente una "autostrada" che salta gli strati: $x + f(x)$ invece di $f(x)$. Le introduciamo nella Lezione 7.
 - **A grande scala questa lezione è il lavoro quotidiano**: picchi della loss, norme dei gradienti, precisione numerica. La differenza fra un run che converge e uno che brucia una settimana di GPU è spesso in un grafico come questi, guardato in tempo.
 
-> **[Nuovo] Aggiornamento.** Nei modelli recenti (Llama, Mistral, Qwen, DeepSeek...) la LayerNorm è quasi sempre sostituita dalla **RMSNorm**, che divide solo per la radice della media dei quadrati, senza sottrarre la media: è più semplice e veloce e funziona altrettanto bene. Vedi l'[Appendice D](#appendice-d-cosa-è-cambiato-dopo-gpt-2-20192026).
+> **[Nuovo] Aggiornamento.** Nei modelli recenti (Llama, Mistral, Qwen, DeepSeek...) la LayerNorm è quasi sempre sostituita dalla **RMSNorm**, che divide solo per la radice della media dei quadrati, senza sottrarre la media: è più semplice e veloce e funziona altrettanto bene. Vedi l'[Appendice D](#appendice-d-----cosa-è-cambiato-dopo-gpt-2-2019--2026).
 
 ### Riepilogo
 
@@ -1369,7 +1367,7 @@ Tutta la Lezione 4 è dentro queste righe: niente bias prima della BatchNorm, ga
 
 Prima di addestrare: un batch finto attraverso il modello, stampando le forme strato per strato (BatchNorm e Tanh non cambiano la forma e qui sono omesse).
 
-```
+```text
 input               (32, 8)
 Embedding        -> (32, 8, 10)
 Flatten(2)       -> (32, 4, 20)    Linear -> (32, 4, 68)
@@ -1725,7 +1723,7 @@ Guardando i pesi di attenzione del primo strato sulla frase "la lanterna non si 
 - **La KV-cache.** Il nostro `generate` ricalcola tutto il contesto a ogni nuovo carattere. I sistemi veri tengono in memoria le key e i value già calcolati e, a ogni passo, calcolano solo quelli del **nuovo token**: stessa matematica, molto meno lavoro.
 - **Cosa manca:** un tokenizer vero (Lezione 8), la scala (Lezione 9), e la capacità di rispondere invece di continuare (Lezione 10).
 
-> **[Nuovo] Aggiornamento.** I modelli recenti hanno cambiato alcuni pezzi di questo blocco, lasciando intatta l'idea: posizioni codificate con **RoPE** invece di `pos_emb`, **RMSNorm** invece di LayerNorm, MLP di tipo **SwiGLU**, attenzione con key/value condivise fra teste (**GQA/MQA**) per ridurre la KV-cache. Dettagli nell'[Appendice D](#appendice-d-cosa-è-cambiato-dopo-gpt-2-20192026).
+> **[Nuovo] Aggiornamento.** I modelli recenti hanno cambiato alcuni pezzi di questo blocco, lasciando intatta l'idea: posizioni codificate con **RoPE** invece di `pos_emb`, **RMSNorm** invece di LayerNorm, MLP di tipo **SwiGLU**, attenzione con key/value condivise fra teste (**GQA/MQA**) per ridurre la KV-cache. Dettagli nell'[Appendice D](#appendice-d-----cosa-è-cambiato-dopo-gpt-2-2019--2026).
 
 ### Riepilogo
 
@@ -1818,8 +1816,8 @@ def decode(ids, vocab):
 
 300 merge (vocabolario 556): da 22 847 byte a **8 459 token**, cioè 2,7 byte per token.
 
-- I primi merge sono "vocale + spazio" (`a `, `e `, `o `, `i `): l'italiano finisce quasi ogni parola in vocale. L'algoritmo non sa nulla di grammatica, sa solo contare.
-- Più avanti nascono token lunghi legati al racconto: `Pietrarsa`, `lanterna`, `\u2014 disse` (la lineetta del dialogo seguita da `disse`), perfino `.\n\nCapitolo ` (12 byte).
+- I primi merge sono "vocale + spazio" (`a `, `e `, `o `, `i `): l'italiano finisce quasi ogni parola in vocale. L'algoritmo non sa nulla di grammatica, sa solo contare. <!-- markdownlint-disable-line MD038 -->
+- Più avanti nascono token lunghi legati al racconto: `Pietrarsa`, `lanterna`, `\u2014 disse` (la lineetta del dialogo seguita da `disse`), perfino `.\n\nCapitolo ` (12 byte). <!-- markdownlint-disable-line MD038 -->
 - Su una frase nuova, "La lanterna di Pietrarsa non si è mai spenta, nemmeno una notte.", si ottengono 19 token, e `decode(encode(s)) == s`.
 
 **Token speciali.** I tokenizer veri riservano id per marcatori che non vengono dal testo, come `<|endoftext|>` (fine di un documento e inizio del successivo). È la stessa idea del `.` della Lezione 2, applicata a documenti interi. Si gestiscono a parte: si divide il testo sul marcatore, si codificano i pezzi e si inserisce l'id riservato.
@@ -2033,7 +2031,7 @@ Ognuna di queste tecniche esiste per un motivo misurabile: senza tying un terzo 
 
 Cosa resta: abbiamo un modello che **continua** il testo. Non risponde a domande, non segue istruzioni, non rifiuta richieste pericolose: ha solo imparato a prevedere il token successivo di internet. È l'argomento della Lezione 10.
 
-> **[Nuovo] Per proseguire.** Nell'ottobre 2025 Karpathy ha pubblicato **nanochat**, il seguito naturale di questa lezione: un unico repository che copre tokenizer, pre-training, fine-tuning, una fase di reinforcement learning, inferenza con KV-cache e un'interfaccia di chat, addestrabile in poche ore su un nodo con 8 GPU. Usa un'architettura aggiornata (RoPE, RMSNorm senza parametri, normalizzazione di query e key, MLP con ReLU$^2$, embedding e `lm_head` non condivisi) e l'ottimizzatore **Muon** insieme ad AdamW. Vedi l'[Appendice D](#appendice-d-cosa-è-cambiato-dopo-gpt-2-20192026).
+> **[Nuovo] Per proseguire.** Nell'ottobre 2025 Karpathy ha pubblicato **nanochat**, il seguito naturale di questa lezione: un unico repository che copre tokenizer, pre-training, fine-tuning, una fase di reinforcement learning, inferenza con KV-cache e un'interfaccia di chat, addestrabile in poche ore su un nodo con 8 GPU. Usa un'architettura aggiornata (RoPE, RMSNorm senza parametri, normalizzazione di query e key, MLP con ReLU$^2$, embedding e `lm_head` non condivisi) e l'ottimizzatore **Muon** insieme ad AdamW. Vedi l'[Appendice D](#appendice-d-----cosa-è-cambiato-dopo-gpt-2-2019--2026).
 
 ### Riepilogo
 
@@ -2047,7 +2045,6 @@ Cosa resta: abbiamo un modello che **continua** il testo. Non risponde a domande
 
 ---
 
-
 ## Lezione 10 --- Da modello base ad assistente
 
 *Lettura: circa 30 minuti.* Nessuna nuova architettura: il modello resta quello della Lezione 7. Cambiano i dati e l'obiettivo dell'addestramento. È la differenza fra un modello che completa internet e un assistente che risponde.
@@ -2056,7 +2053,7 @@ Cosa resta: abbiamo un modello che **continua** il testo. Non risponde a domande
 
 Diamo al nostro GPT della Lezione 7 un prompt in forma di domanda:
 
-```
+```text
 PROMPT:        "Domanda: dove si trova Pietrarsa? Risposta:"
 CONTINUAZIONE: " racco quella lare un accendo la fiama, con le ragazio..."
 ```
@@ -2077,7 +2074,7 @@ Il **supervised fine-tuning** riprende il modello base e continua ad addestrarlo
 
 I turni della conversazione sono marcati con **token speciali** (la stessa idea di `<|endoftext|>`, Lezione 8):
 
-```
+```text
 <|system|> Sei un assistente utile e onesto.
 <|user|> Dove si trova Pietrarsa?
 <|assistant|> Pietrarsa è un paese di montagna immaginario, ambientato in un racconto...<|end|>
@@ -2102,9 +2099,9 @@ Dopo l'SFT il modello sa **imitare** la forma di una buona risposta. Ma per molt
 
 2. **Addestrare un reward model**, un modello **separato** (di solito inizializzato dal modello SFT) in cui l'ultimo strato produce un solo numero, il punteggio di qualità $r(x, y)$, invece della softmax sul vocabolario. Si usa il modello di **Bradley--Terry**:
 
-$$P(y_w \succ y_l \mid x) = \sigma\big(r(x, y_w) - r(x, y_l)\big), \qquad L_{RM} = -\log \sigma\big(r(x, y_w) - r(x, y_l)\big)$$
+   $$P(y_w \succ y_l \mid x) = \sigma\big(r(x, y_w) - r(x, y_l)\big), \qquad L_{RM} = -\log \sigma\big(r(x, y_w) - r(x, y_l)\big)$$
 
-dove $\sigma$ è la sigmoide. Esempio: con $r(y_w) = 2{,}3$ e $r(y_l) = 0{,}4$, $P = \sigma(1{,}9) = 0{,}87$ e $L_{RM} = 0{,}14$ (il reward model giudica bene). Con i punteggi invertiti $L_{RM} = 2{,}04$, quasi quindici volte di più. È una cross-entropy binaria: sigmoide e logaritmo, nessuna idea nuova.
+   dove $\sigma$ è la sigmoide. Esempio: con $r(y_w) = 2{,}3$ e $r(y_l) = 0{,}4$, $P = \sigma(1{,}9) = 0{,}87$ e $L_{RM} = 0{,}14$ (il reward model giudica bene). Con i punteggi invertiti $L_{RM} = 2{,}04$, quasi quindici volte di più. È una cross-entropy binaria: sigmoide e logaritmo, nessuna idea nuova.
 
 3. **Ottimizzare il modello contro il reward model, con PPO.** Qui l'addestramento smette di essere un semplice backward. Il modello genera risposte **campionando** token (`torch.multinomial`, Lezione 2), e il campionamento non è derivabile. Serve il reinforcement learning: **PPO** (*Proximal Policy Optimization*) stima come cambiare i pesi per rendere più probabili le risposte premiate. Si aggiunge una penalità (**divergenza KL**) che impedisce al modello di allontanarsi troppo dal modello SFT, per evitare che impari a "ingannare" il reward model con risposte degeneri ma ben valutate (*reward hacking*).
 
